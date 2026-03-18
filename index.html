@@ -1,0 +1,1918 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>30 Algoritmos de IA — Aprenda do Zero</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #12121a;
+    --card: #1a1a26;
+    --border: #2a2a3d;
+    --accent1: #7c3aed;
+    --accent2: #06b6d4;
+    --accent3: #f59e0b;
+    --accent4: #10b981;
+    --text: #e2e8f0;
+    --muted: #64748b;
+    --highlight: #a78bfa;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Syne', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* GRID BG */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(124,58,237,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(124,58,237,0.04) 1px, transparent 1px);
+    background-size: 48px 48px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .app { position: relative; z-index: 1; }
+
+  /* HEADER */
+  header {
+    padding: 2rem 1.5rem 1.5rem;
+    text-align: center;
+    border-bottom: 1px solid var(--border);
+    background: linear-gradient(180deg, rgba(124,58,237,0.12) 0%, transparent 100%);
+  }
+
+  header .tag {
+    display: inline-block;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--accent2);
+    border: 1px solid var(--accent2);
+    padding: 0.25rem 0.75rem;
+    border-radius: 2px;
+    margin-bottom: 1rem;
+  }
+
+  header h1 {
+    font-size: clamp(1.8rem, 5vw, 3rem);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    background: linear-gradient(135deg, #a78bfa 0%, #06b6d4 50%, #f59e0b 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1.1;
+  }
+
+  header p {
+    color: var(--muted);
+    margin-top: 0.5rem;
+    font-size: 0.9rem;
+  }
+
+  /* PROGRESS BAR */
+  .progress-bar-wrap {
+    padding: 1rem 1.5rem;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    backdrop-filter: blur(12px);
+  }
+
+  .progress-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+
+  .progress-track {
+    flex: 1;
+    height: 4px;
+    background: var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent1), var(--accent2));
+    border-radius: 4px;
+    transition: width 0.5s ease;
+    width: 0%;
+  }
+
+  .progress-count {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--highlight);
+    white-space: nowrap;
+  }
+
+  /* CATEGORY TABS */
+  .category-nav {
+    display: flex;
+    gap: 0.5rem;
+    padding: 1rem 1.5rem;
+    overflow-x: auto;
+    scrollbar-width: none;
+    border-bottom: 1px solid var(--border);
+  }
+  .category-nav::-webkit-scrollbar { display: none; }
+
+  .cat-btn {
+    flex-shrink: 0;
+    padding: 0.4rem 1rem;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--muted);
+    border-radius: 2px;
+    cursor: pointer;
+    font-family: 'Syne', sans-serif;
+    font-size: 0.78rem;
+    font-weight: 600;
+    transition: all 0.2s;
+    letter-spacing: 0.02em;
+  }
+
+  .cat-btn:hover { color: var(--text); border-color: var(--accent1); }
+  .cat-btn.active {
+    background: var(--accent1);
+    border-color: var(--accent1);
+    color: white;
+  }
+
+  /* ALGORITHM GRID */
+  .algo-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1px;
+    background: var(--border);
+    padding: 0;
+  }
+
+  .algo-card {
+    background: var(--card);
+    padding: 1.25rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .algo-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--cat-color, var(--accent1));
+    transform: scaleX(0);
+    transition: transform 0.3s;
+    transform-origin: left;
+  }
+
+  .algo-card:hover::before { transform: scaleX(1); }
+  .algo-card:hover { background: #1e1e2e; }
+
+  .algo-card.learned {
+    background: #0f1a1a;
+  }
+  .algo-card.learned::before { transform: scaleX(1); background: var(--accent4); }
+
+  .card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 0.75rem;
+  }
+
+  .card-num {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--muted);
+  }
+
+  .card-status {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: 1.5px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.55rem;
+    transition: all 0.3s;
+  }
+  .algo-card.learned .card-status {
+    background: var(--accent4);
+    border-color: var(--accent4);
+    color: white;
+  }
+
+  .card-emoji { font-size: 1.6rem; margin-bottom: 0.5rem; }
+
+  .card-name {
+    font-size: 0.95rem;
+    font-weight: 700;
+    line-height: 1.3;
+    margin-bottom: 0.3rem;
+  }
+
+  .card-desc {
+    font-size: 0.75rem;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+
+  .card-cat-badge {
+    display: inline-block;
+    margin-top: 0.75rem;
+    font-size: 0.6rem;
+    font-family: 'Space Mono', monospace;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0.15rem 0.5rem;
+    border-radius: 2px;
+    background: rgba(255,255,255,0.05);
+    color: var(--muted);
+  }
+
+  /* MODAL */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.85);
+    z-index: 200;
+    backdrop-filter: blur(4px);
+    align-items: flex-start;
+    justify-content: center;
+    padding: 1rem;
+    overflow-y: auto;
+  }
+  .modal-overlay.open { display: flex; }
+
+  .modal {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    max-width: 680px;
+    width: 100%;
+    margin: auto;
+    animation: slideUp 0.3s ease;
+    position: relative;
+  }
+
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .modal-header {
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    background: linear-gradient(135deg, rgba(124,58,237,0.1) 0%, transparent 60%);
+  }
+
+  .modal-header-left { flex: 1; }
+
+  .modal-num {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--muted);
+    margin-bottom: 0.3rem;
+  }
+
+  .modal-title {
+    font-size: 1.4rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+  }
+
+  .modal-subtitle {
+    font-size: 0.8rem;
+    color: var(--muted);
+    margin-top: 0.25rem;
+  }
+
+  .modal-close {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    width: 32px;
+    height: 32px;
+    cursor: pointer;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    flex-shrink: 0;
+    margin-left: 1rem;
+  }
+  .modal-close:hover { color: var(--text); border-color: var(--text); }
+
+  .modal-body { padding: 1.5rem; }
+
+  /* TABS inside modal */
+  .tab-nav {
+    display: flex;
+    gap: 0;
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+  }
+  .tab-btn {
+    flex: 1;
+    padding: 0.5rem;
+    background: none;
+    border: none;
+    color: var(--muted);
+    cursor: pointer;
+    font-family: 'Syne', sans-serif;
+    font-size: 0.72rem;
+    font-weight: 600;
+    transition: all 0.2s;
+    letter-spacing: 0.03em;
+  }
+  .tab-btn + .tab-btn { border-left: 1px solid var(--border); }
+  .tab-btn.active { background: var(--accent1); color: white; }
+
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  /* CONTENT SECTIONS */
+  .section-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.62rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--accent2);
+    margin-bottom: 0.6rem;
+  }
+
+  .explain-text {
+    font-size: 0.88rem;
+    line-height: 1.8;
+    color: var(--text);
+    margin-bottom: 1.25rem;
+  }
+
+  .analogy-box {
+    background: rgba(245,158,11,0.08);
+    border: 1px solid rgba(245,158,11,0.2);
+    border-left: 3px solid var(--accent3);
+    padding: 1rem;
+    border-radius: 0 2px 2px 0;
+    margin-bottom: 1.25rem;
+  }
+
+  .analogy-box .emoji { font-size: 1.2rem; margin-bottom: 0.3rem; }
+  .analogy-box p { font-size: 0.82rem; line-height: 1.7; color: var(--text); }
+
+  .use-cases {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .use-case-tag {
+    font-size: 0.7rem;
+    padding: 0.25rem 0.6rem;
+    background: rgba(6,182,212,0.1);
+    border: 1px solid rgba(6,182,212,0.2);
+    color: var(--accent2);
+    border-radius: 2px;
+    font-family: 'Space Mono', monospace;
+  }
+
+  .pros-cons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .pros, .cons {
+    padding: 0.75rem;
+    border-radius: 2px;
+    font-size: 0.78rem;
+  }
+
+  .pros {
+    background: rgba(16,185,129,0.06);
+    border: 1px solid rgba(16,185,129,0.15);
+  }
+
+  .cons {
+    background: rgba(239,68,68,0.06);
+    border: 1px solid rgba(239,68,68,0.15);
+  }
+
+  .pros-cons h4 {
+    font-size: 0.65rem;
+    font-family: 'Space Mono', monospace;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+  }
+
+  .pros h4 { color: var(--accent4); }
+  .cons h4 { color: #f87171; }
+
+  .pros ul, .cons ul { padding-left: 1rem; line-height: 1.9; color: var(--muted); }
+
+  /* CODE BLOCK */
+  .code-block {
+    background: #0d0d18;
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    padding: 1rem;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.72rem;
+    line-height: 1.8;
+    overflow-x: auto;
+    color: #a78bfa;
+    margin-bottom: 1rem;
+  }
+
+  .code-block .kw { color: #06b6d4; }
+  .code-block .fn { color: #f59e0b; }
+  .code-block .cm { color: #475569; }
+  .code-block .st { color: #10b981; }
+
+  /* QUIZ */
+  .quiz-question {
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    line-height: 1.6;
+  }
+
+  .quiz-options { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1rem; }
+
+  .quiz-option {
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    cursor: pointer;
+    text-align: left;
+    font-family: 'Syne', sans-serif;
+    font-size: 0.82rem;
+    transition: all 0.2s;
+    border-radius: 2px;
+  }
+  .quiz-option:hover:not(:disabled) { border-color: var(--accent1); background: rgba(124,58,237,0.08); }
+  .quiz-option.correct { border-color: var(--accent4); background: rgba(16,185,129,0.1); color: var(--accent4); }
+  .quiz-option.wrong { border-color: #f87171; background: rgba(239,68,68,0.08); color: #f87171; }
+
+  .quiz-feedback {
+    padding: 0.75rem 1rem;
+    border-radius: 2px;
+    font-size: 0.82rem;
+    line-height: 1.6;
+    display: none;
+  }
+  .quiz-feedback.show { display: block; }
+  .quiz-feedback.ok { background: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.2); color: var(--accent4); }
+  .quiz-feedback.fail { background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.2); color: #f87171; }
+
+  /* MODAL FOOTER */
+  .modal-footer {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .btn {
+    padding: 0.5rem 1.25rem;
+    border: none;
+    cursor: pointer;
+    font-family: 'Syne', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    transition: all 0.2s;
+    border-radius: 2px;
+  }
+
+  .btn-primary { background: var(--accent1); color: white; }
+  .btn-primary:hover { background: #6d28d9; }
+  .btn-success { background: var(--accent4); color: white; }
+  .btn-success:hover { background: #059669; }
+  .btn-ghost { background: transparent; border: 1px solid var(--border); color: var(--muted); }
+  .btn-ghost:hover { color: var(--text); border-color: var(--accent1); }
+
+  .nav-btns { display: flex; gap: 0.5rem; }
+
+  /* HIDDEN */
+  .hidden { display: none !important; }
+
+  /* FILTER BAR */
+  .filter-bar {
+    padding: 0.75rem 1.5rem;
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    flex-wrap: wrap;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .search-input {
+    flex: 1;
+    min-width: 160px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 0.45rem 0.75rem;
+    font-family: 'Syne', sans-serif;
+    font-size: 0.8rem;
+    border-radius: 2px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .search-input:focus { border-color: var(--accent1); }
+  .search-input::placeholder { color: var(--muted); }
+
+  /* EMPTY STATE */
+  .empty-state {
+    padding: 3rem;
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.85rem;
+    grid-column: 1 / -1;
+    background: var(--card);
+  }
+
+  @media (max-width: 500px) {
+    .pros-cons { grid-template-columns: 1fr; }
+    .modal-title { font-size: 1.1rem; }
+    .algo-grid { grid-template-columns: 1fr 1fr; }
+    .card-name { font-size: 0.82rem; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+<header>
+  <div class="tag">curso interativo</div>
+  <h1>30 Algoritmos de IA</h1>
+  <p>Aprenda do zero com explicações, analogias e quizzes</p>
+</header>
+
+<div class="progress-bar-wrap">
+  <span class="progress-label">PROGRESSO</span>
+  <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+  <span class="progress-count" id="progressCount">0 / 30</span>
+</div>
+
+<div class="category-nav" id="catNav"></div>
+
+<div class="filter-bar">
+  <input class="search-input" type="text" placeholder="Buscar algoritmo..." id="searchInput">
+  <button class="btn btn-ghost" id="resetBtn" onclick="resetProgress()">↺ Resetar progresso</button>
+</div>
+
+<div class="algo-grid" id="algoGrid"></div>
+
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+  <div class="modal" id="modal">
+    <div class="modal-header">
+      <div class="modal-header-left">
+        <div class="modal-num" id="mNum"></div>
+        <div class="modal-title" id="mTitle"></div>
+        <div class="modal-subtitle" id="mSub"></div>
+      </div>
+      <button class="modal-close" onclick="closeModalDirect()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="tab-nav">
+        <button class="tab-btn active" onclick="switchTab('explain',this)">📖 Explicação</button>
+        <button class="tab-btn" onclick="switchTab('code',this)">💻 Código</button>
+        <button class="tab-btn" onclick="switchTab('quiz',this)">🧠 Quiz</button>
+      </div>
+
+      <!-- EXPLAIN TAB -->
+      <div class="tab-content active" id="tab-explain">
+        <div class="section-label">O que é?</div>
+        <div class="explain-text" id="mExplain"></div>
+
+        <div class="section-label">Analogia do dia a dia</div>
+        <div class="analogy-box">
+          <div class="emoji" id="mAnalogyEmoji"></div>
+          <p id="mAnalogy"></p>
+        </div>
+
+        <div class="section-label">Casos de uso</div>
+        <div class="use-cases" id="mUseCases"></div>
+
+        <div class="pros-cons">
+          <div class="pros">
+            <h4>✓ Vantagens</h4>
+            <ul id="mPros"></ul>
+          </div>
+          <div class="cons">
+            <h4>✗ Limitações</h4>
+            <ul id="mCons"></ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- CODE TAB -->
+      <div class="tab-content" id="tab-code">
+        <div class="section-label">Exemplo em Python</div>
+        <div class="code-block" id="mCode"></div>
+        <div class="section-label">O que este código faz?</div>
+        <div class="explain-text" id="mCodeExplain"></div>
+      </div>
+
+      <!-- QUIZ TAB -->
+      <div class="tab-content" id="tab-quiz">
+        <div class="quiz-question" id="qQuestion"></div>
+        <div class="quiz-options" id="qOptions"></div>
+        <div class="quiz-feedback" id="qFeedback"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-success" id="markBtn" onclick="toggleLearned()">✓ Marcar como aprendido</button>
+      <div class="nav-btns">
+        <button class="btn btn-ghost" onclick="navAlgo(-1)">← Anterior</button>
+        <button class="btn btn-primary" onclick="navAlgo(1)">Próximo →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const CATEGORIES = {
+  supervised: { label: 'Supervisionado', color: '#7c3aed' },
+  ensemble:   { label: 'Ensemble', color: '#06b6d4' },
+  clustering: { label: 'Clustering', color: '#f59e0b' },
+  dim:        { label: 'Redução Dim.', color: '#ec4899' },
+  rl:         { label: 'Aprendizado por Reforço', color: '#10b981' },
+  deep:       { label: 'Deep Learning', color: '#3b82f6' },
+  anomaly:    { label: 'Anomalia/Outro', color: '#f87171' },
+};
+
+const ALGOS = [
+  {
+    id: 1, emoji: '📈', name: 'Regressão Linear', short: 'Prediz valores contínuos',
+    cat: 'supervised',
+    explain: `A Regressão Linear é o algoritmo mais fundamental do Machine Learning. Ela tenta encontrar a melhor linha reta que descreve a relação entre uma variável de entrada (X) e uma variável de saída (Y). O objetivo é minimizar o erro entre os valores previstos e os reais — isso é feito pelo método dos Mínimos Quadrados, que minimiza a soma dos erros ao quadrado.`,
+    analogyEmoji: '🏠',
+    analogy: 'Imagina que você quer prever o preço de uma casa. Você olha para casas parecidas: quanto maior a área, maior o preço. A Regressão Linear encontra essa "regra geral" — um coeficiente que diz "para cada metro quadrado a mais, o preço sobe R$ X".',
+    useCases: ['Previsão de preços', 'Vendas futuras', 'Score de crédito', 'Temperatura média'],
+    pros: ['Simples e interpretável', 'Treinamento rápido', 'Funciona bem com relações lineares'],
+    cons: ['Não captura relações não-lineares', 'Sensível a outliers', 'Assume relação linear'],
+    code: `<span class="kw">from</span> sklearn.linear_model <span class="kw">import</span> LinearRegression
+<span class="kw">import</span> numpy <span class="kw">as</span> np
+
+<span class="cm"># Dados: tamanho (m²) → preço (R$ mil)</span>
+X = np.array([[50],[80],[100],[120],[150]])
+y = np.array([200, 300, 380, 450, 550])
+
+<span class="cm"># Criando e treinando o modelo</span>
+modelo = LinearRegression()
+modelo.<span class="fn">fit</span>(X, y)
+
+<span class="cm"># Prevendo para 90m²</span>
+prev = modelo.<span class="fn">predict</span>([[90]])
+<span class="fn">print</span>(<span class="st">f"Preço estimado: R$ {prev[0]:.0f} mil"</span>)
+<span class="cm"># Saída: ~R$ 342 mil</span>`,
+    codeExplain: 'Criamos um array com áreas e preços de casas. O modelo aprende a equação da reta (y = ax + b) que melhor se encaixa nesses dados. Depois usamos para prever o preço de uma casa de 90m².',
+    quiz: {
+      q: 'O que a Regressão Linear tenta minimizar durante o treinamento?',
+      opts: ['A soma das diferenças absolutas', 'A soma dos erros ao quadrado (MSE)', 'O número de parâmetros', 'A variância dos dados'],
+      correct: 1,
+      feedback: 'Correto! A Regressão Linear usa o método dos Mínimos Quadrados (OLS), que minimiza a soma dos erros ao quadrado — isso penaliza mais os erros grandes e garante uma solução matemática única.',
+    }
+  },
+  {
+    id: 2, emoji: '🔀', name: 'Regressão Logística', short: 'Prediz resultados binários',
+    cat: 'supervised',
+    explain: `Apesar do nome "regressão", é um algoritmo de classificação! Ela usa a função sigmoide para transformar qualquer valor numérico em uma probabilidade entre 0 e 1. Se a probabilidade for > 0.5, classifica como "sim" (1); caso contrário, "não" (0). É muito usado para classificações binárias.`,
+    analogyEmoji: '🚦',
+    analogy: 'Pensa no diagnóstico de spam no e-mail. O algoritmo calcula a probabilidade de um e-mail ser spam baseado em palavras, remetente etc. Se a probabilidade ultrapassar 50%, vai para a caixa de spam.',
+    useCases: ['Detecção de spam', 'Diagnóstico médico (sim/não)', 'Aprovação de crédito', 'Churn de clientes'],
+    pros: ['Dá probabilidades (não só classe)', 'Interpretável', 'Funciona bem com dados linearmente separáveis'],
+    cons: ['Não funciona bem com relações complexas', 'Assume fronteira de decisão linear', 'Precisa de mais dados para não overfittar'],
+    code: `<span class="kw">from</span> sklearn.linear_model <span class="kw">import</span> LogisticRegression
+
+<span class="cm"># Horas estudadas → passou no exam (0/1)</span>
+X = [[1],[2],[3],[4],[5],[6],[7],[8]]
+y = [0, 0, 0, 0, 1, 1, 1, 1]
+
+modelo = LogisticRegression()
+modelo.<span class="fn">fit</span>(X, y)
+
+<span class="cm"># Qual a probabilidade de passar estudando 5.5h?</span>
+prob = modelo.<span class="fn">predict_proba</span>([[5.5]])[0][1]
+<span class="fn">print</span>(<span class="st">f"Probabilidade de passar: {prob:.1%}"</span>)`,
+    codeExplain: 'Temos dados de horas estudadas e se o aluno passou ou não. O modelo aprende onde está a "fronteira" entre passar e reprovar. A função predict_proba retorna a probabilidade, não só 0 ou 1.',
+    quiz: {
+      q: 'Por que a Regressão Logística usa a função sigmoide?',
+      opts: ['Para acelerar o treinamento', 'Para transformar qualquer número em probabilidade entre 0 e 1', 'Para reduzir overfitting', 'Para lidar com múltiplas classes'],
+      correct: 1,
+      feedback: 'Exato! A função sigmoide σ(x) = 1/(1+e^(-x)) "espreme" qualquer valor real para o intervalo [0,1], o que permite interpretar a saída como probabilidade.',
+    }
+  },
+  {
+    id: 3, emoji: '🌳', name: 'Árvore de Decisão', short: 'Usa regras em forma de árvore',
+    cat: 'supervised',
+    explain: `Uma Árvore de Decisão divide os dados em perguntas binárias (sim/não) de forma hierárquica, como um fluxograma. Em cada nó, o algoritmo escolhe a pergunta que melhor separa os dados (usando métricas como Gini ou Entropia). O resultado final é um conjunto de regras interpretáveis.`,
+    analogyEmoji: '🎯',
+    analogy: 'É exatamente como o jogo "Adivinhe o animal": "Tem 4 patas? → Sim. É carnívoro? → Não. É grande? → Sim." Cada pergunta reduz as possibilidades até chegar na resposta.',
+    useCases: ['Aprovação de crédito', 'Diagnóstico médico', 'Classificação de clientes', 'Tomada de decisão em negócios'],
+    pros: ['Muito interpretável e visual', 'Não precisa normalizar dados', 'Lida com categorias e números'],
+    cons: ['Overfitting fácil', 'Instável (pequenas mudanças → árvore diferente)', 'Bias para features com muitos valores'],
+    code: `<span class="kw">from</span> sklearn.tree <span class="kw">import</span> DecisionTreeClassifier
+
+<span class="cm"># [idade, salário] → comprará produto? (0/1)</span>
+X = [[25,3000],[45,8000],[30,5000],[22,2000],[55,12000]]
+y = [0, 1, 0, 0, 1]
+
+modelo = DecisionTreeClassifier(max_depth=3)
+modelo.<span class="fn">fit</span>(X, y)
+
+pred = modelo.<span class="fn">predict</span>([[40, 7000]])
+<span class="fn">print</span>(<span class="st">"Comprará:"</span>, <span class="st">"Sim"</span> <span class="kw">if</span> pred[0] <span class="kw">else</span> <span class="st">"Não"</span>)`,
+    codeExplain: 'Limitamos a profundidade da árvore (max_depth=3) para evitar overfitting. O modelo aprende regras como "Se salário > 6000 E idade > 35, então compra".',
+    quiz: {
+      q: 'Qual o principal problema de uma Árvore de Decisão muito profunda sem limitação?',
+      opts: ['Underfitting — aprende pouco', 'Overfitting — memoriza os dados de treino', 'Fica mais lenta para prever', 'Usa mais memória RAM'],
+      correct: 1,
+      feedback: 'Certo! Uma árvore muito profunda "decora" os dados de treino, criando regras ultra-específicas que não generalizam para dados novos. Por isso usamos max_depth ou poda (pruning).',
+    }
+  },
+  {
+    id: 4, emoji: '🌲🌲', name: 'Random Forest', short: 'Combina múltiplas árvores',
+    cat: 'ensemble',
+    explain: `Random Forest cria centenas de Árvores de Decisão, cada uma treinada em uma amostra aleatória dos dados (bagging) e com um subconjunto aleatório de features. A predição final é a votação majoritária de todas as árvores. Isso reduz drasticamente o overfitting.`,
+    analogyEmoji: '🗳️',
+    analogy: 'Pensa em consultar 100 médicos diferentes sobre um diagnóstico. Cada um tem uma especialidade e visão diferente. A resposta final é a que a maioria concorda. É muito mais confiável do que ouvir apenas um especialista.',
+    useCases: ['Detecção de fraude', 'Previsão de doenças', 'Score de risco', 'Classificação de imagens'],
+    pros: ['Muito preciso e robusto', 'Resiste ao overfitting', 'Indica importância das features'],
+    cons: ['Lento para treinar com muitas árvores', 'Pouco interpretável (caixa preta)', 'Usa muita memória'],
+    code: `<span class="kw">from</span> sklearn.ensemble <span class="kw">import</span> RandomForestClassifier
+<span class="kw">from</span> sklearn.datasets <span class="kw">import</span> load_iris
+
+iris = <span class="fn">load_iris</span>()
+X, y = iris.data, iris.target
+
+modelo = RandomForestClassifier(n_estimators=100, random_state=42)
+modelo.<span class="fn">fit</span>(X[:120], y[:120])
+
+acc = modelo.<span class="fn">score</span>(X[120:], y[120:])
+<span class="fn">print</span>(<span class="st">f"Acurácia: {acc:.1%}"</span>)
+
+<span class="cm"># Ver quais features importam mais</span>
+imp = modelo.feature_importances_
+<span class="fn">print</span>(<span class="st">"Importâncias:"</span>, imp.<span class="fn">round</span>(2))`,
+    codeExplain: 'Criamos 100 árvores (n_estimators=100). O dataset Iris tem 4 features de flores. feature_importances_ nos diz quais features foram mais úteis para separar as 3 classes.',
+    quiz: {
+      q: 'Qual técnica o Random Forest usa para criar diversidade entre as árvores?',
+      opts: ['Gradient Descent', 'Bagging + seleção aleatória de features', 'Redes neurais', 'Regularização L1/L2'],
+      correct: 1,
+      feedback: 'Correto! O Random Forest usa Bootstrap Aggregating (Bagging): cada árvore treina em uma amostra aleatória COM reposição dos dados, e em cada split usa apenas um subconjunto aleatório das features.',
+    }
+  },
+  {
+    id: 5, emoji: '✂️', name: 'SVM', short: 'Encontra o hiperplano ótimo',
+    cat: 'supervised',
+    explain: `O Support Vector Machine encontra o "hiperplano" (linha em 2D, plano em 3D, etc.) que melhor separa duas classes com a maior margem possível. Os pontos mais próximos deste hiperplano são chamados de "vetores de suporte". Com o kernel trick, consegue separar dados não-lineares!`,
+    analogyEmoji: '📏',
+    analogy: 'Imagina duas tribos num campo. O SVM encontra o caminho que passa pelo meio das duas tribos com a maior "faixa de segurança" possível dos dois lados. Quanto maior a faixa, melhor o modelo.',
+    useCases: ['Classificação de texto', 'Reconhecimento de imagem', 'Bioinformática', 'Detecção de outliers'],
+    pros: ['Eficaz em alta dimensionalidade', 'Funciona com kernel trick para não-linear', 'Robusto com margens claras'],
+    cons: ['Lento em datasets grandes', 'Sensível à escala dos dados', 'Difícil de interpretar com kernels'],
+    code: `<span class="kw">from</span> sklearn.svm <span class="kw">import</span> SVC
+<span class="kw">from</span> sklearn.preprocessing <span class="kw">import</span> StandardScaler
+
+<span class="cm"># IMPORTANTE: SVM precisa de normalização!</span>
+X = [[1,2],[2,3],[3,3],[5,5],[6,6],[7,5]]
+y = [0, 0, 0, 1, 1, 1]
+
+scaler = <span class="fn">StandardScaler</span>()
+X_scaled = scaler.<span class="fn">fit_transform</span>(X)
+
+<span class="cm"># kernel='rbf' para dados não-lineares</span>
+svm = <span class="fn">SVC</span>(kernel=<span class="st">'rbf'</span>, C=1.0)
+svm.<span class="fn">fit</span>(X_scaled, y)
+<span class="fn">print</span>(<span class="st">"Classe:"</span>, svm.<span class="fn">predict</span>(scaler.<span class="fn">transform</span>([[4,4]])))`,
+    codeExplain: 'Normalizamos os dados (essencial para SVM). O kernel RBF (Radial Basis Function) permite que o SVM crie fronteiras de decisão não-lineares através do "kernel trick".',
+    quiz: {
+      q: 'O que são "Support Vectors" no SVM?',
+      opts: ['Todos os pontos de treino', 'Os pontos mais próximos do hiperplano de decisão', 'Os centróides de cada classe', 'Os dados de validação'],
+      correct: 1,
+      feedback: 'Correto! Os Support Vectors são exatamente os pontos de treino mais próximos do hiperplano. O SVM só precisa deles para definir a fronteira — os outros pontos podem ser removidos sem mudar o modelo!',
+    }
+  },
+  {
+    id: 6, emoji: '👥', name: 'k-Nearest Neighbors (KNN)', short: 'Classifica por vizinhança',
+    cat: 'supervised',
+    explain: `O KNN é um algoritmo "preguiçoso" — ele não aprende nada durante o treino! Na hora de classificar um novo ponto, ele simplesmente procura os k pontos mais próximos no conjunto de treino e faz uma votação. A classe com mais vizinhos vence. Simples e poderoso.`,
+    analogyEmoji: '🏘️',
+    analogy: 'Você se mudou para uma cidade nova. Para saber se o bairro é bom ou ruim, você pergunta para os 5 vizinhos mais próximos de você. Se 4 deles dizem que é bom, você conclui que é um bom bairro.',
+    useCases: ['Sistema de recomendação', 'Detecção de anomalias', 'Reconhecimento de escrita', 'Medicina personalizada'],
+    pros: ['Simples de entender e implementar', 'Aprende padrões complexos', 'Funciona bem com poucos dados'],
+    cons: ['Lento em produção (compara com todos)', 'Ruim em alta dimensionalidade', 'Sensível à escala e outliers'],
+    code: `<span class="kw">from</span> sklearn.neighbors <span class="kw">import</span> KNeighborsClassifier
+
+<span class="cm"># [altura, peso] → esporte preferido</span>
+X = [[165,55],[170,60],[180,90],[185,95],[160,50],[175,80]]
+y = [<span class="st">'natação','natação','rugby','rugby','natação','rugby'</span>]
+
+knn = <span class="fn">KNeighborsClassifier</span>(n_neighbors=3)
+knn.<span class="fn">fit</span>(X, y)
+
+pred = knn.<span class="fn">predict</span>([[178, 85]])
+<span class="fn">print</span>(<span class="st">"Esporte previsto:"</span>, pred[0])  <span class="cm"># rugby</span>`,
+    codeExplain: 'Com k=3, para uma nova pessoa de 178cm/85kg, o modelo acha os 3 mais parecidos no treino. Se 2 jogam rugby e 1 nada, o resultado é rugby.',
+    quiz: {
+      q: 'Por que o KNN é chamado de algoritmo "lazy" (preguiçoso)?',
+      opts: ['Porque usa pouca CPU', 'Porque não constrói nenhum modelo durante o treino', 'Porque tem baixa acurácia', 'Porque usa menos memória'],
+      correct: 1,
+      feedback: 'Isso mesmo! O KNN não aprende nenhum modelo durante o treino — ele simplesmente memoriza todos os exemplos. O trabalho pesado acontece na hora da predição, quando precisa calcular distâncias para todos os pontos.',
+    }
+  },
+  {
+    id: 7, emoji: '📊', name: 'Naive Bayes', short: 'Classificador probabilístico',
+    cat: 'supervised',
+    explain: `Naive Bayes usa o Teorema de Bayes para calcular a probabilidade de um dado pertencer a cada classe. É "naive" (ingênuo) porque assume que todas as features são independentes entre si — o que raramente é verdade, mas funciona surpreendentemente bem na prática, especialmente para texto.`,
+    analogyEmoji: '📧',
+    analogy: 'Ao classificar e-mails, Naive Bayes pergunta: "Dado que esse e-mail tem a palavra GRÁTIS, qual a probabilidade de ser spam?" Multiplica as probabilidades de cada palavra independentemente para obter o score final.',
+    useCases: ['Filtro de spam', 'Análise de sentimento', 'Classificação de notícias', 'Diagnóstico médico'],
+    pros: ['Extremamente rápido', 'Funciona bem com texto', 'Ótimo com poucos dados'],
+    cons: ['Assume independência (falsa)', 'Problema do zero probability', 'Não captura correlações'],
+    code: `<span class="kw">from</span> sklearn.naive_bayes <span class="kw">import</span> MultinomialNB
+<span class="kw">from</span> sklearn.feature_extraction.text <span class="kw">import</span> CountVectorizer
+
+textos = [
+  <span class="st">"oferta grátis ganhe dinheiro"</span>,  <span class="cm"># spam</span>
+  <span class="st">"reunião amanhã às 14h"</span>,         <span class="cm"># normal</span>
+  <span class="st">"clique aqui promoção incrível"</span>,  <span class="cm"># spam</span>
+  <span class="st">"relatório do projeto enviado"</span>,   <span class="cm"># normal</span>
+]
+labels = [1, 0, 1, 0]  <span class="cm"># 1=spam, 0=normal</span>
+
+vec = <span class="fn">CountVectorizer</span>()
+X = vec.<span class="fn">fit_transform</span>(textos)
+
+nb = <span class="fn">MultinomialNB</span>()
+nb.<span class="fn">fit</span>(X, labels)
+
+novo = vec.<span class="fn">transform</span>([<span class="st">"oferta incrível grátis"</span>])
+<span class="fn">print</span>(<span class="st">"Spam?"</span>, nb.<span class="fn">predict</span>(novo)[0])  <span class="cm"># 1</span>`,
+    codeExplain: 'CountVectorizer transforma textos em vetores de contagem de palavras. O MultinomialNB aprende a probabilidade de cada palavra aparecer em cada classe (spam/não-spam).',
+    quiz: {
+      q: 'Por que Naive Bayes é chamado de "naive" (ingênuo)?',
+      opts: ['Porque é simples de implementar', 'Porque assume que as features são independentes entre si', 'Porque só funciona com dados pequenos', 'Porque não usa gradientes'],
+      correct: 1,
+      feedback: 'Correto! A suposição de independência condicional entre features raramente é verdadeira — por exemplo, as palavras "não" e "bom" juntas mudam completamente o sentido. Mas mesmo assim, o algoritmo funciona muito bem na prática!',
+    }
+  },
+  {
+    id: 8, emoji: '🚀', name: 'Gradient Boosting', short: 'Árvores que corrigem erros',
+    cat: 'ensemble',
+    explain: `Gradient Boosting é uma técnica de ensemble onde os modelos são treinados sequencialmente. Cada novo modelo foca nos erros cometidos pelo modelo anterior — ele tenta "consertar" o que os outros erraram. A soma de vários modelos fracos cria um modelo poderoso.`,
+    analogyEmoji: '🔧',
+    analogy: 'Imagina um time de médicos num diagnóstico difícil. O primeiro médico faz o diagnóstico inicial. O segundo médico foca apenas nos casos que o primeiro errou. O terceiro foca nos erros do segundo. No final, combinam todas as opiniões.',
+    useCases: ['Competições de ML (Kaggle)', 'Previsão de vendas', 'Detecção de fraude', 'Ranking de busca'],
+    pros: ['Alta acurácia em dados tabulares', 'Flexível (muitas métricas)', 'Feature importance confiável'],
+    cons: ['Pode overfittar', 'Lento para treinar', 'Muitos hiperparâmetros'],
+    code: `<span class="kw">from</span> sklearn.ensemble <span class="kw">import</span> GradientBoostingClassifier
+<span class="kw">from</span> sklearn.datasets <span class="kw">import</span> make_classification
+
+X, y = <span class="fn">make_classification</span>(n_samples=500, n_features=10, random_state=42)
+
+gb = <span class="fn">GradientBoostingClassifier</span>(
+    n_estimators=100,
+    learning_rate=0.1,  <span class="cm"># taxa de aprendizado</span>
+    max_depth=3,
+    random_state=42
+)
+gb.<span class="fn">fit</span>(X[:400], y[:400])
+acc = gb.<span class="fn">score</span>(X[400:], y[400:])
+<span class="fn">print</span>(<span class="st">f"Acurácia: {acc:.1%}"</span>)`,
+    codeExplain: 'learning_rate controla quanto cada árvore contribui. Valores menores precisam de mais árvores mas são mais robustos. n_estimators é o número de árvores na sequência.',
+    quiz: {
+      q: 'Qual a diferença fundamental entre Random Forest e Gradient Boosting?',
+      opts: ['Random Forest usa árvores, Gradient Boosting usa redes neurais', 'Random Forest treina árvores em paralelo, Gradient Boosting em sequência', 'Random Forest é supervisionado, Gradient Boosting não', 'Não há diferença, são equivalentes'],
+      correct: 1,
+      feedback: 'Perfeito! Random Forest cria árvores independentemente e em paralelo (bagging). Gradient Boosting cria cada árvore DEPOIS da anterior, focando nos erros residuais (boosting). Por isso Gradient Boosting é mais lento mas geralmente mais preciso.',
+    }
+  },
+  {
+    id: 9, emoji: '⚡', name: 'AdaBoost', short: 'Aumenta peso dos erros',
+    cat: 'ensemble',
+    explain: `AdaBoost (Adaptive Boosting) é o precursor do Gradient Boosting. Ele também treina modelos em sequência, mas a diferença é que aumenta o peso dos exemplos que foram classificados errado. O próximo modelo presta mais atenção nesses casos difíceis.`,
+    analogyEmoji: '🎓',
+    analogy: 'Um professor que sempre inclui no próximo prova as questões que os alunos erraram mais. Os alunos são "forçados" a melhorar nos pontos fracos. Com o tempo, o desempenho geral melhora.',
+    useCases: ['Detecção de faces (Viola-Jones)', 'Classificação binária', 'Reconhecimento de objetos'],
+    pros: ['Simples de entender', 'Menos hiperparâmetros', 'Boa acurácia com modelos fracos'],
+    cons: ['Sensível a ruído e outliers', 'Mais lento que Random Forest', 'Não funciona bem em dados desequilibrados'],
+    code: `<span class="kw">from</span> sklearn.ensemble <span class="kw">import</span> AdaBoostClassifier
+<span class="kw">from</span> sklearn.tree <span class="kw">import</span> DecisionTreeClassifier
+
+<span class="cm"># Base learner: árvore rasa (stump)</span>
+base = <span class="fn">DecisionTreeClassifier</span>(max_depth=1)
+ada = <span class="fn">AdaBoostClassifier</span>(
+    estimator=base,
+    n_estimators=50,
+    learning_rate=1.0
+)
+
+<span class="kw">from</span> sklearn.datasets <span class="kw">import</span> make_classification
+X, y = <span class="fn">make_classification</span>(n_samples=200, random_state=42)
+ada.<span class="fn">fit</span>(X[:150], y[:150])
+<span class="fn">print</span>(<span class="st">f"Acurácia: {ada.score(X[150:], y[150:]):.1%}"</span>)`,
+    codeExplain: 'O "base learner" padrão do AdaBoost são Decision Stumps (árvores com apenas 1 nível). Individualmente são péssimos, mas juntos formam um classificador poderoso.',
+    quiz: {
+      q: 'O que AdaBoost faz com os exemplos classificados incorretamente?',
+      opts: ['Remove-os do dataset', 'Aumenta o peso deles para o próximo modelo', 'Diminui o peso deles', 'Cria cópias deles'],
+      correct: 1,
+      feedback: 'Exato! O AdaBoost aumenta o peso dos exemplos mal classificados. Assim, o próximo estimador presta mais atenção nesses casos difíceis, melhorando progressivamente o desempenho.',
+    }
+  },
+  {
+    id: 10, emoji: '🏆', name: 'XGBoost', short: 'Gradient Boosting otimizado',
+    cat: 'ensemble',
+    explain: `XGBoost (Extreme Gradient Boosting) é uma implementação altamente otimizada do Gradient Boosting. Inclui regularização L1/L2 para evitar overfitting, processamento paralelo, tratamento de valores nulos e muito mais. É um dos algoritmos mais usados em competições de ML.`,
+    analogyEmoji: '🏎️',
+    analogy: 'Se Gradient Boosting é um carro comum, XGBoost é uma Fórmula 1. Mesma ideia central, mas com motor turbo, aerodinâmica avançada e muito mais ajustes finos para extrair o máximo desempenho.',
+    useCases: ['Kaggle (domina competições)', 'Análise de risco financeiro', 'Recomendação', 'Ranqueamento'],
+    pros: ['Rápido (processamento paralelo)', 'Regularização built-in', 'Lida com NaN automaticamente'],
+    cons: ['Muitos hiperparâmetros', 'Pode overfittar se mal configurado', 'Requer instalação extra (pip install xgboost)'],
+    code: `<span class="kw">import</span> xgboost <span class="kw">as</span> xgb
+<span class="kw">from</span> sklearn.datasets <span class="kw">import</span> load_breast_cancer
+<span class="kw">from</span> sklearn.model_selection <span class="kw">import</span> train_test_split
+
+X, y = <span class="fn">load_breast_cancer</span>(return_X_y=True)
+X_tr, X_te, y_tr, y_te = <span class="fn">train_test_split</span>(X, y, test_size=0.2)
+
+modelo = xgb.<span class="fn">XGBClassifier</span>(
+    n_estimators=100,
+    max_depth=4,
+    learning_rate=0.1,
+    reg_lambda=1.0,  <span class="cm"># regularização L2</span>
+    use_label_encoder=False,
+    eval_metric=<span class="st">'logloss'</span>
+)
+modelo.<span class="fn">fit</span>(X_tr, y_tr)
+<span class="fn">print</span>(<span class="st">f"Acurácia: {modelo.score(X_te, y_te):.1%}"</span>)`,
+    codeExplain: 'reg_lambda adiciona regularização L2 (Ridge) para penalizar pesos grandes e evitar overfitting. O XGBoost também aceita eval_set para early stopping durante o treino.',
+    quiz: {
+      q: 'Qual é a principal vantagem do XGBoost sobre o Gradient Boosting tradicional?',
+      opts: ['Usa redes neurais profundas', 'Regularização built-in e processamento paralelo', 'Funciona sem supervisão', 'Não precisa de dados'],
+      correct: 1,
+      feedback: 'Correto! XGBoost adiciona regularização L1/L2 para controlar overfitting, suporte a processamento paralelo para velocidade, e tratamento nativo de valores ausentes — além de inúmeras otimizações de memória.',
+    }
+  },
+  {
+    id: 11, emoji: '🎯', name: 'k-Means Clustering', short: 'Agrupa dados em k clusters',
+    cat: 'clustering',
+    explain: `k-Means é um algoritmo de clustering não-supervisionado que divide os dados em k grupos. Funciona de forma iterativa: escolhe k centroides aleatórios, atribui cada ponto ao centroide mais próximo, recalcula os centroides como a média de cada grupo, e repete até convergir.`,
+    analogyEmoji: '🗺️',
+    analogy: 'Imagina abrir k lojas numa cidade. Você quer que cada loja seja a mais próxima possível dos seus clientes. O k-Means vai iterativamente realocando as lojas até encontrar as posições que minimizam a distância total percorrida pelos clientes.',
+    useCases: ['Segmentação de clientes', 'Compressão de imagens', 'Detecção de anomalias', 'Agrupamento de documentos'],
+    pros: ['Simples e rápido', 'Escala bem para grandes datasets', 'Fácil de interpretar'],
+    cons: ['Precisa definir k manualmente', 'Assume clusters esféricos', 'Sensível à inicialização e outliers'],
+    code: `<span class="kw">from</span> sklearn.cluster <span class="kw">import</span> KMeans
+<span class="kw">import</span> numpy <span class="kw">as</span> np
+
+<span class="cm"># Dados de clientes: [gastos_mês, frequência_visitas]</span>
+X = np.<span class="fn">array</span>([[10,2],[12,3],[100,20],[95,18],[8,1],[110,22]])
+
+kmeans = <span class="fn">KMeans</span>(n_clusters=2, random_state=42, n_init=10)
+kmeans.<span class="fn">fit</span>(X)
+
+<span class="fn">print</span>(<span class="st">"Clusters:"</span>, kmeans.labels_)
+<span class="fn">print</span>(<span class="st">"Centroides:"</span>, kmeans.cluster_centers_.<span class="fn">round</span>(1))
+
+<span class="cm"># "Elbow method" para escolher k</span>
+inercias = [<span class="fn">KMeans</span>(n_clusters=k, n_init=10).<span class="fn">fit</span>(X).inertia_ 
+            <span class="kw">for</span> k <span class="kw">in</span> range(1,5)]
+<span class="fn">print</span>(<span class="st">"Inércias:"</span>, [<span class="st">f"{i:.0f}"</span> <span class="kw">for</span> i <span class="kw">in</span> inercias])`,
+    codeExplain: 'inertia_ é a soma das distâncias quadráticas de cada ponto ao seu centroide. O "Elbow Method" plota inércia vs. k — o "cotovelo" da curva indica o k ideal.',
+    quiz: {
+      q: 'Como o k-Means determina o cluster de cada ponto?',
+      opts: ['Pelo cluster com maior densidade', 'Pelo centroide mais próximo (distância euclidiana)', 'Por votação dos vizinhos', 'Pela probabilidade bayesiana'],
+      correct: 1,
+      feedback: 'Correto! k-Means atribui cada ponto ao centroide mais próximo usando distância euclidiana. Depois recalcula os centroides como a média dos pontos do cluster. Repete até não haver mais mudanças.',
+    }
+  },
+  {
+    id: 12, emoji: '🌿', name: 'Hierarchical Clustering', short: 'Cria hierarquia de clusters',
+    cat: 'clustering',
+    explain: `O Clustering Hierárquico cria uma árvore de clusters (dendrograma). Na abordagem aglomerativa (bottom-up), começa com cada ponto como seu próprio cluster e vai unindo os mais próximos iterativamente. Ao cortar o dendrograma numa certa altura, obtemos k clusters.`,
+    analogyEmoji: '🌳',
+    analogy: 'Pensa em construir uma árvore genealógica ao contrário: você começa com cada pessoa separada, vai agrupando irmãos, depois primos, depois famílias inteiras. O resultado é uma hierarquia completa de parentescos.',
+    useCases: ['Bioinformática (genes)', 'Análise de documentos', 'Segmentação de clientes', 'Taxonomia'],
+    pros: ['Não precisa definir k antecipadamente', 'Produz dendrograma (visualização rica)', 'Captura hierarquia natural dos dados'],
+    cons: ['O(n³) — muito lento em grandes datasets', 'Sensível a outliers', 'Difícil de aplicar em produção'],
+    code: `<span class="kw">from</span> sklearn.cluster <span class="kw">import</span> AgglomerativeClustering
+<span class="kw">from</span> scipy.cluster.hierarchy <span class="kw">import</span> dendrogram, linkage
+<span class="kw">import</span> numpy <span class="kw">as</span> np
+
+X = np.<span class="fn">array</span>([[1,2],[1.5,1.8],[5,8],[8,8],[1,0.6],[9,11]])
+
+<span class="cm"># Cluster aglomerativo com 2 grupos</span>
+hc = <span class="fn">AgglomerativeClustering</span>(n_clusters=2, linkage=<span class="st">'ward'</span>)
+labels = hc.<span class="fn">fit_predict</span>(X)
+<span class="fn">print</span>(<span class="st">"Grupos:"</span>, labels)
+
+<span class="cm"># Para visualizar o dendrograma:</span>
+<span class="cm"># Z = linkage(X, method='ward')</span>
+<span class="cm"># dendrogram(Z); plt.show()</span>`,
+    codeExplain: 'linkage="ward" minimiza a variância total ao juntar clusters (geralmente produz clusters mais balanceados). Outras opções: "single", "complete", "average".',
+    quiz: {
+      q: 'O que é um dendrograma no Clustering Hierárquico?',
+      opts: ['Um tipo especial de árvore de decisão', 'Uma visualização em árvore mostrando como clusters foram unidos', 'Um gráfico de dispersão colorido', 'Um histograma das distâncias'],
+      correct: 1,
+      feedback: 'Correto! O dendrograma é a principal saída do Clustering Hierárquico — uma árvore que mostra a ordem e as distâncias em que os grupos foram unidos. Cortando a árvore numa certa altura, você define o número de clusters.',
+    }
+  },
+  {
+    id: 13, emoji: '🔴', name: 'DBSCAN', short: 'Clusters por densidade',
+    cat: 'clustering',
+    explain: `DBSCAN (Density-Based Spatial Clustering) forma clusters com base na densidade de pontos. Um ponto é "core" se tem pelo menos minPts vizinhos num raio epsilon. Pontos que não pertencem a nenhum cluster são marcados como outliers (-1). Funciona com clusters de qualquer formato!`,
+    analogyEmoji: '🏙️',
+    analogy: 'Imagina uma cidade vista de cima. Regiões densas (centros urbanos) são clusters. Regiões esparsas (interior) são ruído. O algoritmo encontra automaticamente quantas "cidades" existem sem você precisar definir isso.',
+    useCases: ['Detecção de anomalias', 'Análise geoespacial', 'Segmentação de imagens', 'Análise de tráfego'],
+    pros: ['Detecta outliers automaticamente', 'Não precisa definir k', 'Funciona com formas arbitrárias'],
+    cons: ['Difícil de configurar epsilon e minPts', 'Ruim com densidades variáveis', 'Lento em alta dimensionalidade'],
+    code: `<span class="kw">from</span> sklearn.cluster <span class="kw">import</span> DBSCAN
+<span class="kw">import</span> numpy <span class="kw">as</span> np
+
+<span class="cm"># Dados com outlier</span>
+X = np.<span class="fn">array</span>([[1,1],[1.1,1],[1,1.1],
+                [5,5],[5.1,5],[5,5.1],
+                [99,99]])  <span class="cm"># outlier!</span>
+
+db = <span class="fn">DBSCAN</span>(eps=0.5, min_samples=2)
+labels = db.<span class="fn">fit_predict</span>(X)
+
+<span class="fn">print</span>(<span class="st">"Labels:"</span>, labels)
+<span class="cm"># [0 0 0 1 1 1 -1]  → -1 = outlier!</span>
+n_clusters = <span class="fn">len</span>(<span class="fn">set</span>(labels)) - (1 <span class="kw">if</span> -1 <span class="kw">in</span> labels <span class="kw">else</span> 0)
+<span class="fn">print</span>(<span class="st">f"Clusters encontrados: {n_clusters}"</span>)`,
+    codeExplain: 'eps define o raio de vizinhança. min_samples é o número mínimo de pontos para formar um cluster. Pontos com label -1 são outliers — isso é uma feature poderosa do DBSCAN!',
+    quiz: {
+      q: 'O que o DBSCAN retorna quando um ponto é um outlier?',
+      opts: ['Ele remove o ponto do dataset', 'Atribui o label -1', 'Cria um cluster só para ele', 'Lança um erro'],
+      correct: 1,
+      feedback: 'Correto! Outliers recebem o label -1. Isso é uma das maiores vantagens do DBSCAN — ele identifica automaticamente pontos que não pertencem a nenhum cluster denso, sem precisar de um passo extra de detecção de anomalias.',
+    }
+  },
+  {
+    id: 14, emoji: '🗜️', name: 'PCA', short: 'Reduz dimensionalidade',
+    cat: 'dim',
+    explain: `PCA (Principal Component Analysis) transforma dados de alta dimensionalidade em um número menor de dimensões (componentes principais) que capturam a maior parte da variância. Ele encontra as direções de maior variação nos dados e projeta os pontos nessas direções.`,
+    analogyEmoji: '🌅',
+    analogy: 'Pensa numa foto 3D (nuvem de pontos). PCA é como encontrar o melhor ângulo para fotografar essa nuvem — o ângulo que preserva mais informação numa imagem 2D. Você perde alguma profundidade, mas mantém a essência.',
+    useCases: ['Visualização de dados', 'Compressão', 'Pré-processamento para ML', 'Remoção de ruído'],
+    pros: ['Reduz overfitting', 'Acelera treinamento', 'Remove correlações entre features'],
+    cons: ['Perde interpretabilidade', 'Assume relações lineares', 'Sensível à escala'],
+    code: `<span class="kw">from</span> sklearn.decomposition <span class="kw">import</span> PCA
+<span class="kw">from</span> sklearn.preprocessing <span class="kw">import</span> StandardScaler
+<span class="kw">import</span> numpy <span class="kw">as</span> np
+
+<span class="cm"># Dados com 5 features</span>
+X = np.random.<span class="fn">randn</span>(100, 5)
+
+scaler = <span class="fn">StandardScaler</span>()
+X_scaled = scaler.<span class="fn">fit_transform</span>(X)
+
+<span class="cm"># Reduzir para 2 componentes principais</span>
+pca = <span class="fn">PCA</span>(n_components=2)
+X_2d = pca.<span class="fn">fit_transform</span>(X_scaled)
+
+variancia = pca.explained_variance_ratio_
+<span class="fn">print</span>(<span class="st">f"Variância explicada: {variancia.sum():.1%}"</span>)
+<span class="fn">print</span>(<span class="st">f"Shape: {X_scaled.shape} → {X_2d.shape}"</span>)`,
+    codeExplain: 'explained_variance_ratio_ mostra quanto de informação cada componente captura. Se os 2 primeiros componentes capturam 80%+ da variância, a redução é eficaz.',
+    quiz: {
+      q: 'Por que é obrigatório normalizar os dados ANTES de aplicar PCA?',
+      opts: ['Para tornar os dados mais lineares', 'Para que features com escalas maiores não dominem os componentes principais', 'Para remover outliers', 'Para acelerar o cálculo'],
+      correct: 1,
+      feedback: 'Perfeito! Se uma feature varia de 0 a 10000 e outra de 0 a 1, PCA seria dominado pela primeira por ter maior variância absoluta — mesmo que a segunda seja mais informativa. StandardScaler garante que todas as features contribuam igualmente.',
+    }
+  },
+  {
+    id: 15, emoji: '🔮', name: 't-SNE', short: 'Visualiza dados complexos em 2D',
+    cat: 'dim',
+    explain: `t-SNE (t-distributed Stochastic Neighbor Embedding) é uma técnica de redução de dimensionalidade especialmente boa para visualização. Ele preserva a estrutura de vizinhança dos dados — pontos próximos no espaço original ficam próximos em 2D/3D. Porém, é estocástico e lento.`,
+    analogyEmoji: '🗺️',
+    analogy: 'Imagina comprimir um globo terrestre numa folha plana. t-SNE tenta preservar as "vizinhanças" — países próximos no globo continuam próximos no mapa — mesmo que as distâncias globais sejam distorcidas.',
+    useCases: ['Visualização de embeddings', 'Análise de clusters', 'Exploração de dados', 'NLP (visualizar palavras)'],
+    pros: ['Excelente para visualização', 'Preserva estrutura local', 'Revela clusters ocultos'],
+    cons: ['Não preserva distâncias globais', 'Lento (O(n²))', 'Resultados não-determinísticos', 'NÃO usar para ML diretamente'],
+    code: `<span class="kw">from</span> sklearn.manifold <span class="kw">import</span> TSNE
+<span class="kw">from</span> sklearn.datasets <span class="kw">import</span> load_digits
+<span class="kw">import</span> numpy <span class="kw">as</span> np
+
+<span class="cm"># Dígitos manuscritos: 64 features → 2D</span>
+digits = <span class="fn">load_digits</span>()
+X, y = digits.data[:500], digits.target[:500]
+
+tsne = <span class="fn">TSNE</span>(
+    n_components=2,
+    perplexity=30,  <span class="cm"># 5-50 é o recomendado</span>
+    random_state=42,
+    n_iter=1000
+)
+X_2d = tsne.<span class="fn">fit_transform</span>(X)
+<span class="fn">print</span>(<span class="st">f"Shape: {X.shape} → {X_2d.shape}"</span>)
+<span class="cm"># Plote X_2d com matplotlib colorindo por y</span>
+<span class="cm"># Você verá 10 clusters bem separados!</span>`,
+    codeExplain: 'perplexity controla o balanço entre estrutura local e global (default 30 funciona bem). Com 500 dígitos de 64 dimensões → 2D, você verá 10 grupos visíveis (um por dígito).',
+    quiz: {
+      q: 'Para qual finalidade t-SNE é mais adequado?',
+      opts: ['Treinar modelos de ML em produção', 'Visualização e exploração de dados', 'Reduzir dimensionalidade para salvar disco', 'Substituir PCA em todos os casos'],
+      correct: 1,
+      feedback: 'Correto! t-SNE é específico para visualização — não para redução de dimensionalidade pré-ML. As coordenadas 2D do t-SNE não têm significado além de "pertos = similares", e rodar duas vezes dá resultados diferentes.',
+    }
+  },
+  {
+    id: 16, emoji: '🎮', name: 'Q-Learning', short: 'Aprende por recompensas',
+    cat: 'rl',
+    explain: `Q-Learning é um algoritmo de Reinforcement Learning onde um agente aprende uma política ótima de ação através de recompensas e punições. Ele mantém uma tabela Q que mapeia (estado, ação) para valores de recompensa esperada. Usa a equação de Bellman para atualizar esses valores.`,
+    analogyEmoji: '🐭',
+    analogy: 'Um rato num labirinto. Cada vez que toma uma decisão (esquerda ou direita), recebe uma recompensa (+1 se avança, -1 se bate na parede). Com o tempo, aprende o melhor caminho sem ninguém explicar as regras.',
+    useCases: ['Jogos (Atari)', 'Robótica', 'Navegação autônoma', 'Otimização de recursos'],
+    pros: ['Aprende sem supervisão humana', 'Converge para política ótima', 'Simples de entender conceitualmente'],
+    cons: ['Não escala para estados contínuos', 'Lento para convergir', 'Precisa de muito ambiente simulado'],
+    code: `<span class="kw">import</span> numpy <span class="kw">as</span> np
+
+<span class="cm"># Ambiente simples: 4 estados, 2 ações</span>
+n_estados, n_acoes = 4, 2
+Q = np.<span class="fn">zeros</span>((n_estados, n_acoes))
+alpha, gamma, epsilon = 0.1, 0.9, 0.1
+
+<span class="kw">def</span> <span class="fn">atualizar_Q</span>(estado, acao, recompensa, proximo_estado):
+    <span class="cm"># Equação de Bellman</span>
+    alvo = recompensa + gamma * np.<span class="fn">max</span>(Q[proximo_estado])
+    Q[estado, acao] += alpha * (alvo - Q[estado, acao])
+
+<span class="cm"># Simulação de um passo</span>
+<span class="fn">atualizar_Q</span>(estado=0, acao=1, recompensa=1, proximo_estado=1)
+<span class="fn">print</span>(<span class="st">"Tabela Q:"</span>)
+<span class="fn">print</span>(Q.<span class="fn">round</span>(2))`,
+    codeExplain: 'alpha é a taxa de aprendizado. gamma é o fator de desconto (quanto valem recompensas futuras). epsilon controla a exploração (ε-greedy: às vezes age aleatoriamente para explorar). A equação de Bellman combina recompensa imediata + valor futuro esperado.',
+    quiz: {
+      q: 'O que representa o valor Q(s, a) na tabela Q?',
+      opts: ['A probabilidade de estar no estado s', 'A recompensa total esperada ao executar ação a no estado s', 'O número de vezes que a ação a foi executada', 'A distância até o objetivo'],
+      correct: 1,
+      feedback: 'Certo! Q(s,a) é a recompensa acumulada esperada (somando presentes e futuras descontadas) se executarmos a ação "a" no estado "s" e seguirmos a política ótima dali em diante. O agente sempre escolhe a ação com maior valor Q.',
+    }
+  },
+  {
+    id: 17, emoji: '🔄', name: 'SARSA', short: 'Q-Learning on-policy',
+    cat: 'rl',
+    explain: `SARSA (State-Action-Reward-State-Action) é similar ao Q-Learning mas com uma diferença crucial: ele é on-policy. Enquanto Q-Learning atualiza baseado na melhor ação possível (off-policy), SARSA usa a ação que o agente realmente vai executar, tornando-o mais conservador.`,
+    analogyEmoji: '🚗',
+    analogy: 'Imagine aprender a dirigir. Q-Learning seria aprender com o melhor piloto de Fórmula 1 teórico. SARSA seria aprender com seu próprio comportamento real de motorista — mais conservador mas mais realista para sua situação.',
+    useCases: ['Robôs em ambientes perigosos', 'Trading de baixo risco', 'Simulações realistas'],
+    pros: ['Mais seguro em ambientes reais', 'On-policy (aprende a política real)', 'Menos arriscado que Q-Learning'],
+    cons: ['Converge mais lentamente', 'Subótimo se a política exploratória for ruim', 'Menos popular que DQN'],
+    code: `<span class="kw">import</span> numpy <span class="kw">as</span> np
+
+Q = np.<span class="fn">zeros</span>((4, 2))  <span class="cm"># 4 estados, 2 ações</span>
+alpha, gamma, epsilon = 0.1, 0.9, 0.1
+
+<span class="kw">def</span> <span class="fn">escolher_acao</span>(estado):
+    <span class="cm"># ε-greedy: explora ou explota</span>
+    <span class="kw">if</span> np.random.<span class="fn">random</span>() < epsilon:
+        <span class="kw">return</span> np.random.<span class="fn">randint</span>(2)
+    <span class="kw">return</span> np.<span class="fn">argmax</span>(Q[estado])
+
+<span class="kw">def</span> <span class="fn">atualizar_SARSA</span>(s, a, r, s2, a2):
+    <span class="cm"># DIFERENÇA: usa a2 (ação real), não max(Q[s2])</span>
+    Q[s, a] += alpha * (r + gamma * Q[s2, a2] - Q[s, a])
+
+<span class="cm"># Simulação</span>
+s, a = 0, <span class="fn">escolher_acao</span>(0)
+r, s2 = 1, 1
+a2 = <span class="fn">escolher_acao</span>(s2)  <span class="cm"># ação que SERÁ tomada</span>
+<span class="fn">atualizar_SARSA</span>(s, a, r, s2, a2)`,
+    codeExplain: 'A diferença chave: na atualização, SARSA usa Q[s2, a2] (a ação que realmente será tomada, incluindo possível exploração), enquanto Q-Learning usaria max(Q[s2]) (a melhor ação teórica).',
+    quiz: {
+      q: 'Qual a principal diferença entre SARSA e Q-Learning?',
+      opts: ['SARSA usa redes neurais, Q-Learning usa tabelas', 'SARSA é on-policy (usa ação real), Q-Learning é off-policy (usa melhor ação)', 'SARSA é mais rápido', 'Não há diferença prática'],
+      correct: 1,
+      feedback: 'Correto! Q-Learning é off-policy: aprende a política ótima independente do que faz agora. SARSA é on-policy: aprende a política que está sendo executada. Em ambientes perigosos, SARSA é preferível porque não assume que você sempre vai agir otimamente.',
+    }
+  },
+  {
+    id: 18, emoji: '🧠🎮', name: 'Deep Q-Network (DQN)', short: 'Q-Learning com rede neural',
+    cat: 'rl',
+    explain: `DQN combina Q-Learning com Redes Neurais Profundas (Deep Learning). Em vez de uma tabela Q, usa uma rede neural para aproximar os valores Q para estados contínuos ou de alta dimensionalidade (como pixels de um jogo). A DeepMind usou DQN para dominar jogos do Atari em 2015.`,
+    analogyEmoji: '🕹️',
+    analogy: 'Q-Learning é como memorizar cada situação num livro de regras. DQN é como desenvolver intuição — a rede neural aprende padrões gerais que se aplicam a situações nunca vistas antes, como um humano experiente.',
+    useCases: ['Jogos do Atari', 'Robôs aprendendo tarefas', 'Trading algorítmico', 'Otimização de data centers'],
+    pros: ['Escala para estados contínuos/visuais', 'Generaliza para estados nunca vistos', 'Estado da arte em muitos domínios'],
+    cons: ['Requer muito poder computacional', 'Instável sem truques (replay buffer, target network)', 'Precisa de muito ambiente'],
+    code: `<span class="kw">import</span> torch
+<span class="kw">import</span> torch.nn <span class="kw">as</span> nn
+
+<span class="cm"># Rede neural que aproxima Q(estado, ação)</span>
+<span class="kw">class</span> <span class="fn">DQN</span>(nn.Module):
+    <span class="kw">def</span> <span class="fn">__init__</span>(self, n_obs, n_acoes):
+        <span class="fn">super</span>().<span class="fn">__init__</span>()
+        self.net = nn.<span class="fn">Sequential</span>(
+            nn.<span class="fn">Linear</span>(n_obs, 128),
+            nn.<span class="fn">ReLU</span>(),
+            nn.<span class="fn">Linear</span>(128, 128),
+            nn.<span class="fn">ReLU</span>(),
+            nn.<span class="fn">Linear</span>(128, n_acoes)
+        )
+    <span class="kw">def</span> <span class="fn">forward</span>(self, x):
+        <span class="kw">return</span> self.net(x)
+
+<span class="cm"># Para CartPole: 4 observações, 2 ações</span>
+dqn = <span class="fn">DQN</span>(n_obs=4, n_acoes=2)
+<span class="fn">print</span>(dqn)  <span class="cm"># Veja a arquitetura</span>`,
+    codeExplain: 'A rede recebe o estado (ex: posição e velocidade do carrinho) e retorna um valor Q para cada ação possível. Truques essenciais: Experience Replay (armazena experiências passadas) e Target Network (rede separada para estabilizar o treino).',
+    quiz: {
+      q: 'Por que DQN usa uma "Replay Buffer" (memória de experiências)?',
+      opts: ['Para economizar memória RAM', 'Para quebrar a correlação entre amostras consecutivas e estabilizar o treino', 'Para acelerar a coleta de dados', 'Para salvar o modelo treinado'],
+      correct: 1,
+      feedback: 'Correto! Experiências consecutivas são altamente correlacionadas, o que instabiliza o gradiente. A Replay Buffer armazena milhares de experiências e amostra mini-batches aleatórios, quebrando essa correlação e estabilizando o aprendizado.',
+    }
+  },
+  {
+    id: 19, emoji: '📐', name: 'Policy Gradient', short: 'Otimiza políticas diretamente',
+    cat: 'rl',
+    explain: `Policy Gradient otimiza diretamente a política (probabilidade de cada ação em cada estado) usando gradiente. Em vez de aprender valores Q, ele aprende quais ações são "boas" aumentando sua probabilidade. O algoritmo REINFORCE é o mais simples desta família.`,
+    analogyEmoji: '🎲',
+    analogy: 'É como ajustar a probabilidade de ganhar num jogo de cartas. Se uma jogada deu certo, você a faz com mais frequência. Se deu errado, menos. Com o tempo, sua estratégia melhora naturalmente.',
+    useCases: ['Controle contínuo (robótica)', 'Processamento de linguagem natural', 'Síntese de fala', 'Jogos com ações contínuas'],
+    pros: ['Funciona com ações contínuas', 'Aprende políticas estocásticas', 'Mais estável que DQN em alguns domínios'],
+    cons: ['Alta variância nos gradientes', 'Convergência lenta', 'Sensível ao learning rate'],
+    code: `<span class="kw">import</span> torch
+<span class="kw">import</span> torch.nn <span class="kw">as</span> nn
+
+<span class="cm"># Rede de política: estado → probabilidades das ações</span>
+<span class="kw">class</span> <span class="fn">PolicyNet</span>(nn.Module):
+    <span class="kw">def</span> <span class="fn">__init__</span>(self, n_obs, n_acoes):
+        <span class="fn">super</span>().<span class="fn">__init__</span>()
+        self.net = nn.<span class="fn">Sequential</span>(
+            nn.<span class="fn">Linear</span>(n_obs, 64),
+            nn.<span class="fn">ReLU</span>(),
+            nn.<span class="fn">Linear</span>(64, n_acoes),
+            nn.<span class="fn">Softmax</span>(dim=-1)  <span class="cm"># → probabilidades!</span>
+        )
+    <span class="kw">def</span> <span class="fn">forward</span>(self, x):
+        <span class="kw">return</span> self.net(x)
+
+<span class="cm"># A ação é AMOSTRADA das probabilidades</span>
+<span class="cm"># loss = -log(prob_ação) * retorno_obtido</span>`,
+    codeExplain: 'A saída é Softmax (probabilidades). Amostramos a ação dessas probabilidades. O loss do REINFORCE aumenta a probabilidade das ações que levaram a boas recompensas e diminui as que levaram a resultados ruins.',
+    quiz: {
+      q: 'Qual a principal vantagem de Policy Gradient sobre DQN?',
+      opts: ['É mais rápido para treinar', 'Funciona com espaços de ação contínuos', 'Precisa de menos dados', 'É mais simples de implementar'],
+      correct: 1,
+      feedback: 'Correto! DQN só funciona com ações discretas (frente/trás/esquerda/direita). Policy Gradient pode lidar com ações contínuas como "aplicar força de 2.34 N" — essencial para robótica e controle físico.',
+    }
+  },
+  {
+    id: 20, emoji: '🎭', name: 'Actor-Critic', short: 'Ator + Crítico combinados',
+    cat: 'rl',
+    explain: `Actor-Critic combina Policy Gradient (ator) e estimação de valores (crítico). O ator escolhe ações. O crítico avalia se a ação foi boa comparada à expectativa. Isso reduz a variância do Policy Gradient usando o crítico como "baseline". A família A3C/PPO usada no ChatGPT é Actor-Critic!`,
+    analogyEmoji: '🎬',
+    analogy: 'Um ator de cinema (escolhe ações) e um diretor crítico (avalia se foi bom). O ator age, o crítico diz "foi melhor ou pior do que eu esperava". O ator ajusta seu estilo baseado nesse feedback específico.',
+    useCases: ['RLHF (ChatGPT, Claude!)', 'Robótica avançada', 'Jogos complexos', 'Controle de veículos autônomos'],
+    pros: ['Menor variância que Policy Gradient puro', 'Funciona com ações contínuas', 'Base do estado da arte (PPO, SAC)'],
+    cons: ['Mais complexo de implementar', 'Dois modelos para treinar', 'Hiperparâmetros delicados'],
+    code: `<span class="kw">import</span> torch.nn <span class="kw">as</span> nn
+
+<span class="cm"># Ator: estado → distribuição de ações</span>
+<span class="kw">class</span> <span class="fn">Ator</span>(nn.Module):
+    <span class="kw">def</span> <span class="fn">__init__</span>(self, n_obs, n_acoes):
+        <span class="fn">super</span>().<span class="fn">__init__</span>()
+        self.net = nn.<span class="fn">Sequential</span>(
+            nn.<span class="fn">Linear</span>(n_obs, 64), nn.<span class="fn">ReLU</span>(),
+            nn.<span class="fn">Linear</span>(64, n_acoes), nn.<span class="fn">Softmax</span>(dim=-1)
+        )
+
+<span class="cm"># Crítico: estado → valor esperado V(s)</span>
+<span class="kw">class</span> <span class="fn">Critico</span>(nn.Module):
+    <span class="kw">def</span> <span class="fn">__init__</span>(self, n_obs):
+        <span class="fn">super</span>().<span class="fn">__init__</span>()
+        self.net = nn.<span class="fn">Sequential</span>(
+            nn.<span class="fn">Linear</span>(n_obs, 64), nn.<span class="fn">ReLU</span>(),
+            nn.<span class="fn">Linear</span>(64, 1)  <span class="cm"># um único valor</span>
+        )
+
+<span class="cm"># advantage = retorno_real - V(estado)</span>
+<span class="cm"># loss_ator = -log(prob) * advantage</span>
+<span class="cm"># loss_critico = MSE(V(s), retorno_real)</span>`,
+    codeExplain: 'O crítico estima V(s) — o valor esperado de estar no estado s. A "advantage" é a diferença entre o retorno real e o esperado. Se positiva, a ação foi melhor que o esperado → aumentar sua probabilidade.',
+    quiz: {
+      q: 'Por que Actor-Critic tem menor variância que o REINFORCE puro?',
+      opts: ['Porque usa mais dados', 'O Crítico fornece um baseline que reduz a variância dos gradientes do Ator', 'Porque usa regularização L2', 'Porque amostra ações deterministicamente'],
+      correct: 1,
+      feedback: 'Exato! No REINFORCE, o gradiente depende do retorno total (muito variável). No Actor-Critic, usa-se a "advantage" (retorno - baseline), que tem variância muito menor pois remove a variância comum a todas as ações naquele estado.',
+    }
+  },
+  {
+    id: 21, emoji: '🧠', name: 'Redes Neurais Artificiais (ANN)', short: 'Imitam neurônios biológicos',
+    cat: 'deep',
+    explain: `ANNs são compostas por neurônios artificiais organizados em camadas (entrada, ocultas, saída). Cada neurônio recebe entradas, aplica pesos, soma tudo, passa por uma função de ativação e envia o resultado adiante. O aprendizado ocorre via backpropagation + gradient descent, ajustando os pesos para minimizar o erro.`,
+    analogyEmoji: '🧬',
+    analogy: 'Como o cérebro humano: neurônios conectados em rede. Quando você aprende a andar de bicicleta, as conexões entre neurônios que levaram ao sucesso ficam mais fortes. ANNs fazem o mesmo matematicamente.',
+    useCases: ['Reconhecimento de padrões', 'Previsão de séries temporais', 'Aproximação de funções', 'Base para todas as arquiteturas de deep learning'],
+    pros: ['Aprende representações complexas', 'Universal (aproxima qualquer função)', 'Base de todo Deep Learning'],
+    cons: ['Caixa preta — difícil de interpretar', 'Precisa de muitos dados', 'Alto custo computacional'],
+    code: `<span class="kw">import</span> torch
+<span class="kw">import</span> torch.nn <span class="kw">as</span> nn
+
+<span class="cm"># Rede com 2 camadas ocultas</span>
+modelo = nn.<span class="fn">Sequential</span>(
+    nn.<span class="fn">Linear</span>(10, 64),   <span class="cm"># entrada: 10 features</span>
+    nn.<span class="fn">ReLU</span>(),
+    nn.<span class="fn">Linear</span>(64, 32),   <span class="cm"># camada oculta</span>
+    nn.<span class="fn">ReLU</span>(),
+    nn.<span class="fn">Linear</span>(32, 1),    <span class="cm"># saída: 1 valor</span>
+    nn.<span class="fn">Sigmoid</span>()         <span class="cm"># classificação binária</span>
+)
+
+<span class="cm"># Treino: define loss e otimizador</span>
+criterio = nn.<span class="fn">BCELoss</span>()
+otimizador = torch.optim.<span class="fn">Adam</span>(modelo.parameters(), lr=0.001)
+
+X = torch.<span class="fn">randn</span>(32, 10)  <span class="cm"># batch de 32</span>
+y = torch.<span class="fn">randint</span>(0, 2, (32, 1)).<span class="fn">float</span>()
+pred = <span class="fn">modelo</span>(X)
+loss = <span class="fn">criterio</span>(pred, y)
+loss.<span class="fn">backward</span>()   <span class="cm"># backpropagation!</span>
+otimizador.<span class="fn">step</span>()`,
+    codeExplain: 'loss.backward() calcula os gradientes (o quanto cada peso contribuiu para o erro). otimizador.step() atualiza os pesos na direção que reduz o erro. Adam é o otimizador mais usado — adapta o learning rate automaticamente.',
+    quiz: {
+      q: 'O que o backpropagation faz em uma rede neural?',
+      opts: ['Inicializa os pesos aleatoriamente', 'Calcula gradientes do erro em relação a cada peso usando a regra da cadeia', 'Remove neurônios inativos', 'Normaliza as ativações'],
+      correct: 1,
+      feedback: 'Correto! Backpropagation aplica a regra da cadeia do cálculo para propagar o erro da camada de saída para trás, calculando quanto cada peso contribuiu para o erro. Esses gradientes são usados pelo otimizador para ajustar os pesos.',
+    }
+  },
+  {
+    id: 22, emoji: '👁️', name: 'CNN', short: 'Especialista em imagens',
+    cat: 'deep',
+    explain: `Redes Neurais Convolucionais aplicam filtros (kernels) que deslizam pela imagem, detectando padrões locais. Camadas iniciais detectam bordas e cores; camadas mais profundas detectam formas; camadas finais detectam objetos completos. O pooling reduz a dimensão espacial.`,
+    analogyEmoji: '🔍',
+    analogy: 'Como o sistema visual humano: os neurônios na retina detectam bordas e luz; o córtex visual V1 detecta formas simples; V4 detecta objetos complexos. CNNs imitam essa hierarquia de processamento visual.',
+    useCases: ['Classificação de imagens', 'Detecção de objetos', 'Reconhecimento facial', 'Diagnóstico médico por imagem'],
+    pros: ['Invariante a translação', 'Parâmetros compartilhados (eficiente)', 'Estado da arte em visão computacional'],
+    cons: ['Requer muitos dados rotulados', 'Alto custo computacional', 'Pouco interpretável'],
+    code: `<span class="kw">import</span> torch.nn <span class="kw">as</span> nn
+
+<span class="kw">class</span> <span class="fn">CNN</span>(nn.Module):
+    <span class="kw">def</span> <span class="fn">__init__</span>(self):
+        <span class="fn">super</span>().<span class="fn">__init__</span>()
+        self.conv = nn.<span class="fn">Sequential</span>(
+            <span class="cm"># Conv: extrai 32 features com filtro 3x3</span>
+            nn.<span class="fn">Conv2d</span>(1, 32, kernel_size=3),
+            nn.<span class="fn">ReLU</span>(),
+            nn.<span class="fn">MaxPool2d</span>(2),   <span class="cm"># reduz pela metade</span>
+            nn.<span class="fn">Conv2d</span>(32, 64, kernel_size=3),
+            nn.<span class="fn">ReLU</span>(),
+            nn.<span class="fn">MaxPool2d</span>(2),
+        )
+        self.fc = nn.<span class="fn">Sequential</span>(
+            nn.<span class="fn">Flatten</span>(),
+            nn.<span class="fn">Linear</span>(64 * 5 * 5, 128),
+            nn.<span class="fn">ReLU</span>(),
+            nn.<span class="fn">Linear</span>(128, 10)  <span class="cm"># 10 classes</span>
+        )
+    <span class="kw">def</span> <span class="fn">forward</span>(self, x):
+        <span class="kw">return</span> self.fc(self.conv(x))`,
+    codeExplain: 'Conv2d(1, 32, 3): aplica 32 filtros 3x3 em imagens grayscale (1 canal). MaxPool2d(2) reduz cada dimensão pela metade. Após as convoluções, Flatten() transforma o tensor 3D em vetor para as camadas densas.',
+    quiz: {
+      q: 'Por que CNNs usam parâmetros compartilhados (pesos do filtro)?',
+      opts: ['Para acelerar o cálculo', 'O mesmo filtro detecta o mesmo padrão em qualquer posição da imagem — eficiência paramétrica', 'Para evitar overfitting automaticamente', 'Para processar imagens de qualquer tamanho'],
+      correct: 1,
+      feedback: 'Correto! Um filtro que detecta bordas verticais deve funcionar em qualquer posição da imagem. Compartilhar pesos significa que uma CNN com filtros 3x3 usa apenas 9 parâmetros por filtro, independente do tamanho da imagem — muito mais eficiente que uma ANN densa!',
+    }
+  },
+  {
+    id: 23, emoji: '📝', name: 'RNN', short: 'Processa sequências',
+    cat: 'deep',
+    explain: `Redes Neurais Recorrentes têm conexões que formam ciclos — a saída de um passo é usada como entrada do próximo. Isso cria uma "memória" que permite processar sequências. Ideal para texto, séries temporais e áudio. Porém, sofrem do problema do vanishing gradient em sequências longas.`,
+    analogyEmoji: '📖',
+    analogy: 'É como ler um livro: você não lê cada frase isoladamente — o contexto das frases anteriores influencia como você interpreta a próxima. A RNN mantém um "estado oculto" que é o seu contexto acumulado.',
+    useCases: ['Previsão de séries temporais', 'Geração de texto (básico)', 'Reconhecimento de fala', 'Tradução automática (base)'],
+    pros: ['Processa sequências de tamanho variável', 'Parâmetros compartilhados no tempo', 'Captura dependências temporais'],
+    cons: ['Vanishing gradient em sequências longas', 'Difícil de paralelizar', 'Substituída por Transformers para texto'],
+    code: `<span class="kw">import</span> torch
+<span class="kw">import</span> torch.nn <span class="kw">as</span> nn
+
+<span class="cm"># RNN para sequências de 5 passos, 10 features</span>
+rnn = nn.<span class="fn">RNN</span>(
+    input_size=10,   <span class="cm"># features por timestep</span>
+    hidden_size=64,  <span class="cm"># tamanho do estado oculto</span>
+    num_layers=2,    <span class="cm"># RNN empilhada</span>
+    batch_first=True
+)
+
+<span class="cm"># Input: (batch=32, seq_len=5, features=10)</span>
+X = torch.<span class="fn">randn</span>(32, 5, 10)
+saida, h_n = <span class="fn">rnn</span>(X)
+
+<span class="fn">print</span>(<span class="st">f"Saída: {saida.shape}"</span>)    <span class="cm"># (32, 5, 64)</span>
+<span class="fn">print</span>(<span class="st">f"Estado final: {h_n.shape}"</span>)  <span class="cm"># (2, 32, 64)</span>`,
+    codeExplain: 'A saída tem shape (batch, seq_len, hidden_size) — uma representação para cada passo temporal. h_n é o estado oculto final — o "resumo" de toda a sequência. Na prática, prefira LSTM ou GRU ao invés de RNN simples.',
+    quiz: {
+      q: 'Qual o principal problema das RNNs com sequências longas?',
+      opts: ['Ficam lentas demais', 'Vanishing gradient — o sinal de erro some nas camadas iniciais', 'Usam muita memória', 'Não funcionam com texto'],
+      correct: 1,
+      feedback: 'Correto! Em sequências longas, ao propagar o gradiente de volta no tempo, ele é multiplicado repetidamente por pesos < 1, fazendo-o desaparecer (ou explodir se > 1). LSTM e GRU resolvem isso com mecanismos de "gates" (portões).',
+    }
+  },
+  {
+    id: 24, emoji: '🧠💾', name: 'LSTM', short: 'RNN com memória longa',
+    cat: 'deep',
+    explain: `LSTM (Long Short-Term Memory) adiciona à RNN uma "célula de memória" e três portões (gates): forget gate (o que esquecer), input gate (o que memorizar de novo) e output gate (o que usar agora). Isso permite lembrar dependências de longo prazo sem o problema do vanishing gradient.`,
+    analogyEmoji: '📒',
+    analogy: 'Como um caderno de notas pessoal durante uma aula: você decide quais anotações antigas deletar (forget gate), quais informações novas escrever (input gate) e quais consultar agora para responder uma pergunta (output gate).',
+    useCases: ['Tradução automática', 'Análise de sentimento', 'Reconhecimento de fala', 'Previsão de séries longas'],
+    pros: ['Captura dependências longas', 'Gradientes mais estáveis', 'Base histórica do NLP antes dos Transformers'],
+    cons: ['Mais lenta que RNN simples', 'Mais parâmetros', 'Ainda difícil de paralelizar'],
+    code: `<span class="kw">import</span> torch
+<span class="kw">import</span> torch.nn <span class="kw">as</span> nn
+
+<span class="kw">class</span> <span class="fn">LSTMPrevisao</span>(nn.Module):
+    <span class="kw">def</span> <span class="fn">__init__</span>(self, n_features, n_ocultos, n_saidas):
+        <span class="fn">super</span>().<span class="fn">__init__</span>()
+        self.lstm = nn.<span class="fn">LSTM</span>(n_features, n_ocultos, batch_first=True)
+        self.fc = nn.<span class="fn">Linear</span>(n_ocultos, n_saidas)
+
+    <span class="kw">def</span> <span class="fn">forward</span>(self, x):
+        <span class="cm"># out: (batch, seq, hidden)</span>
+        out, (h_n, c_n) = self.lstm(x)
+        <span class="cm"># Usa só o último timestep para prever</span>
+        <span class="kw">return</span> self.fc(out[:, -1, :])
+
+modelo = <span class="fn">LSTMPrevisao</span>(n_features=1, n_ocultos=64, n_saidas=1)
+X = torch.<span class="fn">randn</span>(16, 30, 1)  <span class="cm"># 16 séries de 30 dias</span>
+pred = <span class="fn">modelo</span>(X)
+<span class="fn">print</span>(<span class="st">f"Shape: {pred.shape}"</span>)  <span class="cm"># (16, 1)</span>`,
+    codeExplain: 'c_n é a célula de memória (long-term memory). h_n é o estado oculto (short-term memory). out[:, -1, :] pega apenas a saída do último timestep para fazer a previsão final.',
+    quiz: {
+      q: 'O que o "forget gate" da LSTM decide?',
+      opts: ['Quais neurônios desativar (dropout)', 'Quais informações da memória anterior devem ser esquecidas', 'Quando parar o treinamento', 'Qual ativação usar'],
+      correct: 1,
+      feedback: 'Correto! O forget gate usa uma função sigmoide — valores próximos de 1 significam "lembrar" e próximos de 0 significam "esquecer". É esse mecanismo que permite à LSTM "limpar" informações irrelevantes da memória de longo prazo.',
+    }
+  },
+  {
+    id: 25, emoji: '⚡🧠', name: 'Transformer', short: 'Atenção é tudo que você precisa',
+    cat: 'deep',
+    explain: `Transformers revolucionaram a IA com o mecanismo de Self-Attention: cada token pode "prestar atenção" em todos os outros tokens da sequência simultaneamente. Sem recorrência, são altamente paralelizáveis. GPT, BERT, Claude e praticamente todos os LLMs modernos são baseados em Transformers.`,
+    analogyEmoji: '🎺',
+    analogy: 'Numa orquestra, cada instrumento "ouve" todos os outros ao mesmo tempo, não só o vizinho. Self-attention permite que cada palavra num texto "decida" quão relevante cada outra palavra é para seu significado — capturando contexto global instantaneamente.',
+    useCases: ['LLMs (GPT, Claude, Gemini)', 'BERT para NLP', 'Vision Transformers', 'AlphaFold (proteínas)'],
+    pros: ['Paralelização total', 'Captura dependências de longo alcance', 'Estado da arte em NLP e além'],
+    cons: ['Memória O(n²) em relação ao contexto', 'Precisa de enormes quantidades de dados', 'Alto custo computacional'],
+    code: `<span class="kw">import</span> torch
+<span class="kw">import</span> torch.nn <span class="kw">as</span> nn
+
+<span class="cm"># Multi-Head Self-Attention simplificado</span>
+<span class="kw">class</span> <span class="fn">SelfAttention</span>(nn.Module):
+    <span class="kw">def</span> <span class="fn">__init__</span>(self, d_model=64, n_heads=4):
+        <span class="fn">super</span>().<span class="fn">__init__</span>()
+        self.attn = nn.<span class="fn">MultiheadAttention</span>(d_model, n_heads)
+
+    <span class="kw">def</span> <span class="fn">forward</span>(self, x):
+        <span class="cm"># x: (seq, batch, d_model)</span>
+        out, weights = self.attn(x, x, x)
+        <span class="kw">return</span> out, weights
+
+attn = <span class="fn">SelfAttention</span>()
+x = torch.<span class="fn">randn</span>(10, 2, 64)  <span class="cm"># seq=10, batch=2</span>
+out, w = <span class="fn">attn</span>(x)
+<span class="fn">print</span>(<span class="st">f"Saída: {out.shape}"</span>)   <span class="cm"># (10, 2, 64)</span>
+<span class="fn">print</span>(<span class="st">f"Pesos: {w.shape}"</span>)    <span class="cm"># (2, 10, 10)</span>`,
+    codeExplain: 'MultiheadAttention(d_model, n_heads): n_heads "cabeças" de atenção em paralelo, cada uma focando em aspectos diferentes. Os pesos de atenção w mostram "quanto" cada token prestou atenção em cada outro token — é aqui que a mágica acontece!',
+    quiz: {
+      q: 'O que o mecanismo de Self-Attention calcula?',
+      opts: ['A probabilidade de cada palavra no vocabulário', 'O quanto cada token deve "prestar atenção" em cada outro token da sequência', 'Os gradientes da rede', 'A posição de cada palavra na frase'],
+      correct: 1,
+      feedback: 'Exato! Self-Attention calcula scores de atenção entre todos os pares de tokens. A palavra "banco" pode prestar mais atenção em "rio" ou "dinheiro" dependendo do contexto — e isso é aprendido automaticamente durante o treinamento!',
+    }
+  },
+  {
+    id: 26, emoji: '🎯+', name: 'k-Means++', short: 'Inicialização inteligente',
+    cat: 'clustering',
+    explain: `k-Means++ é uma melhoria do k-Means que resolve o problema da inicialização aleatória ruim. Em vez de escolher centroides aleatoriamente, ele escolhe o primeiro aleatório e os seguintes com probabilidade proporcional à distância ao centroide mais próximo já escolhido — garantindo centroides bem distribuídos.`,
+    analogyEmoji: '📍',
+    analogy: 'Para abrir 3 lojas numa cidade, em vez de escolher 3 locais aleatórios (que podem ficar todos no centro), você escolhe a primeira aleatória, depois a segunda o mais longe possível, e a terceira o mais longe das outras duas.',
+    useCases: ['Mesmo do k-Means, mas mais confiável', 'Quando k-Means normal converge mal', 'Datasets de médio porte'],
+    pros: ['Convergência mais rápida', 'Resultados mais consistentes', 'Padrão do scikit-learn hoje (init="k-means++")'],
+    cons: ['Marginalmente mais lento para inicializar', 'Ainda precisa definir k', 'Não resolve clusters não-esféricos'],
+    code: `<span class="kw">from</span> sklearn.cluster <span class="kw">import</span> KMeans
+<span class="kw">import</span> numpy <span class="kw">as</span> np
+
+X = np.random.<span class="fn">randn</span>(300, 2)
+
+<span class="cm"># k-Means clássico (inicialização aleatória)</span>
+km_random = <span class="fn">KMeans</span>(n_clusters=3, init=<span class="st">'random'</span>, n_init=10)
+
+<span class="cm"># k-Means++ (padrão do sklearn!)</span>
+km_pp = <span class="fn">KMeans</span>(n_clusters=3, init=<span class="st">'k-means++'</span>, n_init=10)
+
+km_random.<span class="fn">fit</span>(X)
+km_pp.<span class="fn">fit</span>(X)
+
+<span class="fn">print</span>(<span class="st">"Inércia random:   "</span>, km_random.inertia_.<span class="fn">round</span>(1))
+<span class="fn">print</span>(<span class="st">"Inércia k-means++:"</span>, km_pp.inertia_.<span class="fn">round</span>(1))
+<span class="cm"># k-means++ geralmente tem menor inércia!</span>`,
+    codeExplain: 'O scikit-learn usa k-means++ como padrão (init="k-means++"). Você raramente precisa mudar isso. n_init=10 roda o algoritmo 10 vezes com inicializações diferentes e mantém o melhor resultado.',
+    quiz: {
+      q: 'Como k-Means++ escolhe os centroides iniciais?',
+      opts: ['Aleatoriamente uniformemente', 'Cada novo centroide é escolhido com probabilidade proporcional à distância ao centroide mais próximo já escolhido', 'Pelos pontos mais densos', 'Pelos outliers do dataset'],
+      correct: 1,
+      feedback: 'Correto! Essa estratégia garante que os centroides iniciais estejam bem espalhados pelo espaço, evitando o problema comum de todos começarem próximos. Isso resulta em convergência mais rápida e consistente.',
+    }
+  },
+  {
+    id: 27, emoji: '🗜️', name: 'Autoencoders', short: 'Comprime e reconstrói dados',
+    cat: 'deep',
+    explain: `Autoencoders são redes neurais que aprendem a comprimir dados em uma representação de menor dimensão (encoder) e depois reconstruí-los (decoder). O gargalo no meio força a rede a aprender as features mais importantes. Variantes incluem VAE (generativo) e denoising autoencoders.`,
+    analogyEmoji: '📦',
+    analogy: 'É como fazer um resumo de um livro e depois expandir o resumo de volta ao livro completo. Ao forçar o resumo a ser curto, você é obrigado a capturar apenas a essência — o autoencoder aprende automaticamente o que é essencial.',
+    useCases: ['Compressão de dados', 'Detecção de anomalias', 'Geração de imagens (VAE)', 'Redução de ruído'],
+    pros: ['Aprendizado não-supervisionado', 'Representações latentes ricas', 'Base de modelos generativos'],
+    cons: ['Sem garantias sobre o espaço latente', 'Reconstrução pode ser borrada', 'Treino instável em VAEs'],
+    code: `<span class="kw">import</span> torch.nn <span class="kw">as</span> nn
+
+<span class="kw">class</span> <span class="fn">Autoencoder</span>(nn.Module):
+    <span class="kw">def</span> <span class="fn">__init__</span>(self):
+        <span class="fn">super</span>().<span class="fn">__init__</span>()
+        <span class="cm"># Encoder: comprime 784 → 32</span>
+        self.encoder = nn.<span class="fn">Sequential</span>(
+            nn.<span class="fn">Linear</span>(784, 128), nn.<span class="fn">ReLU</span>(),
+            nn.<span class="fn">Linear</span>(128, 32),  nn.<span class="fn">ReLU</span>()
+        )
+        <span class="cm"># Decoder: reconstrói 32 → 784</span>
+        self.decoder = nn.<span class="fn">Sequential</span>(
+            nn.<span class="fn">Linear</span>(32, 128),  nn.<span class="fn">ReLU</span>(),
+            nn.<span class="fn">Linear</span>(128, 784), nn.<span class="fn">Sigmoid</span>()
+        )
+
+    <span class="kw">def</span> <span class="fn">forward</span>(self, x):
+        z = self.encoder(x)   <span class="cm"># representação latente</span>
+        <span class="kw">return</span> self.decoder(z)
+
+<span class="cm"># Loss: MSE entre entrada e reconstrução</span>`,
+    codeExplain: 'Para dígitos MNIST (28x28=784 pixels), comprimimos para apenas 32 dimensões. O "espaço latente" z captura a essência do dígito. Para detecção de anomalias: se o erro de reconstrução for alto, é anomalia!',
+    quiz: {
+      q: 'Como Autoencoders são usados para detecção de anomalias?',
+      opts: ['Classificam diretamente como anomalia', 'Treinados em dados normais: anomalias têm alto erro de reconstrução', 'Removem outliers durante o treino', 'Usam clustering interno'],
+      correct: 1,
+      feedback: 'Correto! Treina-se o autoencoder apenas com dados normais. Ele aprende a comprimir e reconstruir dados normais bem. Quando apresentamos uma anomalia, a rede não consegue reconstruí-la adequadamente — o alto erro de reconstrução é o sinal de anomalia!',
+    }
+  },
+  {
+    id: 28, emoji: '🌲🚨', name: 'Isolation Forest', short: 'Detecta anomalias isolando pontos',
+    cat: 'anomaly',
+    explain: `Isolation Forest detecta anomalias de forma elegante: pontos anômalos são mais fáceis de "isolar" (separar dos demais) com cortes aleatórios. Constrói muitas árvores com cortes aleatórios — outliers precisam de menos cortes para serem isolados, portanto têm scores de anomalia mais altos.`,
+    analogyEmoji: '🎣',
+    analogy: 'Numa festa, a maioria das pessoas está em grupos. Uma pessoa sozinha num canto é mais fácil de "isolar" (separar de todo mundo) do que uma pessoa no meio de um grupo grande. Isolation Forest quantifica esse isolamento.',
+    useCases: ['Detecção de fraude', 'Monitoramento de sistemas', 'Sensores IoT', 'Controle de qualidade'],
+    pros: ['Eficiente: O(n log n)', 'Sem suposições sobre a distribuição', 'Funciona bem em alta dimensionalidade'],
+    cons: ['Menos interpretável', 'Parâmetro contamination precisa de ajuste', 'Não tão bom com clusters de outliers'],
+    code: `<span class="kw">from</span> sklearn.ensemble <span class="kw">import</span> IsolationForest
+<span class="kw">import</span> numpy <span class="kw">as</span> np
+
+<span class="cm"># Dados normais + anomalias</span>
+normais = np.random.<span class="fn">randn</span>(100, 2)
+anomalias = np.array([[10, 10], [-8, 8], [9, -9]])
+X = np.<span class="fn">vstack</span>([normais, anomalias])
+
+iso = <span class="fn">IsolationForest</span>(
+    contamination=0.03,  <span class="cm"># ~3% esperamos ser anomalia</span>
+    random_state=42
+)
+labels = iso.<span class="fn">fit_predict</span>(X)
+<span class="cm"># -1 = anomalia, 1 = normal</span>
+
+scores = iso.decision_function(X)
+<span class="fn">print</span>(<span class="st">"Últimos 3 (anomalias):"</span>, labels[-3:])  <span class="cm"># [-1 -1 -1]</span>`,
+    codeExplain: 'contamination é a proporção esperada de anomalias. fit_predict retorna 1 para pontos normais e -1 para anomalias. decision_function retorna o score (mais negativo = mais anômalo).',
+    quiz: {
+      q: 'Por que anomalias são isoladas mais rápido no Isolation Forest?',
+      opts: ['Porque têm valores maiores', 'Porque estão em regiões esparsas, então poucos cortes aleatórios as separam do restante', 'Porque o algoritmo as identifica por definição', 'Porque têm mais features'],
+      correct: 1,
+      feedback: 'Exato! Pontos anômalos ficam em regiões esparsas do espaço. Cortes aleatórios em espaços esparsos isolam pontos rapidamente (poucos cortes). Pontos normais estão em clusters densos — precisam de muitos cortes para serem isolados.',
+    }
+  },
+  {
+    id: 29, emoji: '♟️', name: 'Markov Decision Process (MDP)', short: 'Framework para decisão sequencial',
+    cat: 'rl',
+    explain: `MDP é o framework matemático que formaliza o Reinforcement Learning. Define um agente que interage com um ambiente através de estados (S), ações (A), recompensas (R) e transições de probabilidade (P). Todo algoritmo de RL (Q-Learning, DQN, PPO) resolve um MDP.`,
+    analogyEmoji: '🗺️',
+    analogy: 'Pensa num jogo de xadrez. Os estados são as posições das peças. As ações são os movimentos possíveis. As recompensas são +1 ao ganhar e -1 ao perder. As transições dependem das jogadas (determinísticas no xadrez, estocásticas em outros ambientes).',
+    useCases: ['Base teórica do RL', 'Robótica', 'Planejamento automático', 'Jogos e simulações'],
+    pros: ['Framework rigoroso e geral', 'Permite provar propriedades matemáticas', 'Unifica todos os algoritmos de RL'],
+    cons: ['Estado pode ser enorme/contínuo', 'Probabilidades de transição raramente conhecidas', 'Abstrato — precisa de representação concreta'],
+    code: `<span class="kw">import</span> numpy <span class="kw">as</span> np
+
+<span class="cm"># MDP simples: grade 4x4</span>
+<span class="cm"># Estados: 0-15, Ações: 0=cima, 1=baixo, 2=esquerda, 3=direita</span>
+<span class="kw">class</span> <span class="fn">MDP</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(self):
+        self.estado = 0
+        self.objetivo = 15
+
+    <span class="kw">def</span> <span class="fn">step</span>(self, acao):
+        linha = self.estado // 4
+        col = self.estado % 4
+
+        <span class="kw">if</span> acao == 0 <span class="kw">and</span> linha > 0: linha -= 1
+        <span class="kw">elif</span> acao == 1 <span class="kw">and</span> linha < 3: linha += 1
+        <span class="kw">elif</span> acao == 2 <span class="kw">and</span> col > 0: col -= 1
+        <span class="kw">elif</span> acao == 3 <span class="kw">and</span> col < 3: col += 1
+
+        self.estado = linha * 4 + col
+        recompensa = 1 <span class="kw">if</span> self.estado == self.objetivo <span class="kw">else</span> -0.1
+        done = self.estado == self.objetivo
+        <span class="kw">return</span> self.estado, recompensa, done
+
+env = <span class="fn">MDP</span>()
+s2, r, done = env.<span class="fn">step</span>(3)  <span class="cm"># move para direita</span>
+<span class="fn">print</span>(<span class="st">f"Novo estado: {s2}, Recompensa: {r}"</span>)`,
+    codeExplain: 'Este MDP simula um agente numa grade 4x4. A recompensa é +1 ao atingir o objetivo (estado 15) e -0.1 a cada passo (incentiva caminhos curtos). Q-Learning e outros algoritmos de RL são aplicados sobre este tipo de ambiente.',
+    quiz: {
+      q: 'Quais os 4 componentes que definem um MDP?',
+      opts: ['Neurônios, pesos, bias, ativação', 'Estados (S), Ações (A), Recompensas (R), Transições (P)', 'Input, hidden, output, loss', 'Encoder, decoder, latent, loss'],
+      correct: 1,
+      feedback: 'Correto! Um MDP é formalmente definido pela tupla (S, A, R, P) onde: S são os estados possíveis, A são as ações disponíveis, R é a função de recompensa, e P são as probabilidades de transição entre estados. Também se inclui γ (fator de desconto).',
+    }
+  },
+  {
+    id: 30, emoji: '🧬', name: 'Algoritmos Genéticos', short: 'Evolução para otimização',
+    cat: 'anomaly',
+    explain: `Algoritmos Genéticos imitam a evolução biológica: uma população de "indivíduos" (soluções) é avaliada por uma função fitness, os melhores são selecionados para "reprodução" (crossover) com mutações aleatórias. Ao longo das gerações, a população evolui para soluções cada vez melhores.`,
+    analogyEmoji: '🦎',
+    analogy: 'Pensa na seleção natural: animais mais adaptados sobrevivem e reproduzem, passando seus genes. Com mutações aleatórias, novas características surgem. Ao longo do tempo, a espécie fica otimizada para seu ambiente — sem ninguém projetar isso!',
+    useCases: ['Otimização de hiperparâmetros', 'Design de estruturas', 'Roteamento', 'Jogos (evolução de NPCs)', 'Feature selection'],
+    pros: ['Não precisa de gradientes', 'Escapa de mínimos locais', 'Funciona em problemas discretos/combinatórios'],
+    cons: ['Lento para convergir', 'Sem garantia de ótimo global', 'Muitos hiperparâmetros (pop size, mutation rate)'],
+    code: `<span class="kw">import</span> numpy <span class="kw">as</span> np
+
+<span class="kw">def</span> <span class="fn">fitness</span>(x):
+    <span class="cm"># Maximizar: f(x) = -x² + 10  (ótimo em x=0)</span>
+    <span class="kw">return</span> -(x**2) + 10
+
+pop_size, n_geracoes = 20, 50
+populacao = np.random.<span class="fn">uniform</span>(-5, 5, pop_size)
+
+<span class="kw">for</span> gen <span class="kw">in</span> range(n_geracoes):
+    scores = np.<span class="fn">array</span>([<span class="fn">fitness</span>(x) <span class="kw">for</span> x <span class="kw">in</span> populacao])
+    
+    <span class="cm"># Seleção: os 10 melhores reproduzem</span>
+    elite = populacao[np.<span class="fn">argsort</span>(scores)[-10:]]
+    
+    <span class="cm"># Crossover + mutação</span>
+    filhos = []
+    <span class="kw">for</span> _ <span class="kw">in</span> range(pop_size):
+        p1, p2 = np.random.<span class="fn">choice</span>(elite, 2)
+        filho = (p1 + p2) / 2 + np.random.<span class="fn">normal</span>(0, 0.1)
+        filhos.<span class="fn">append</span>(filho)
+    
+    populacao = np.<span class="fn">array</span>(filhos)
+
+melhor = populacao[np.<span class="fn">argmax</span>([<span class="fn">fitness</span>(x) <span class="kw">for</span> x <span class="kw">in</span> populacao])]
+<span class="fn">print</span>(<span class="st">f"Melhor solução: x = {melhor:.4f}"</span>)  <span class="cm"># ~0.0</span>`,
+    codeExplain: 'Cada "indivíduo" é um número real. O crossover é a média dos dois pais. A mutação adiciona ruído gaussiano. Após 50 gerações, a população convergiu para x≈0 (o máximo da função). Em problemas reais, cada indivíduo pode ser um vetor de parâmetros de um modelo ML!',
+    quiz: {
+      q: 'O que é a "função fitness" em um Algoritmo Genético?',
+      opts: ['A taxa de mutação dos genes', 'A função que avalia quão boa é cada solução (indivíduo)', 'O número de gerações', 'O mecanismo de crossover'],
+      correct: 1,
+      feedback: 'Correto! A função fitness é o coração do algoritmo genético — ela avalia a qualidade de cada solução. Indivíduos com maior fitness têm maior probabilidade de serem selecionados para reprodução, passando suas características para a próxima geração.',
+    }
+  }
+];
+
+// STATE
+let learned = new Set(JSON.parse(localStorage.getItem('ai_learned') || '[]'));
+let currentIdx = 0;
+let currentCat = 'all';
+
+function saveProgress() {
+  localStorage.setItem('ai_learned', JSON.stringify([...learned]));
+  updateProgress();
+}
+
+function updateProgress() {
+  const n = learned.size;
+  document.getElementById('progressFill').style.width = (n/30*100) + '%';
+  document.getElementById('progressCount').textContent = `${n} / 30`;
+}
+
+function resetProgress() {
+  if (confirm('Resetar todo o progresso?')) {
+    learned = new Set();
+    saveProgress();
+    renderGrid(currentCat);
+  }
+}
+
+// RENDER CATEGORIES
+function renderCats() {
+  const nav = document.getElementById('catNav');
+  nav.innerHTML = `<button class="cat-btn active" onclick="filterCat('all', this)">Todos (30)</button>`;
+  const counts = {};
+  ALGOS.forEach(a => { counts[a.cat] = (counts[a.cat]||0) + 1; });
+  Object.entries(CATEGORIES).forEach(([key, val]) => {
+    nav.innerHTML += `<button class="cat-btn" onclick="filterCat('${key}', this)">${val.label} (${counts[key]||0})</button>`;
+  });
+}
+
+function filterCat(cat, btn) {
+  currentCat = cat;
+  document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderGrid(cat);
+}
+
+// RENDER GRID
+function renderGrid(cat) {
+  const search = document.getElementById('searchInput').value.toLowerCase();
+  const grid = document.getElementById('algoGrid');
+  let algos = ALGOS;
+  if (cat !== 'all') algos = algos.filter(a => a.cat === cat);
+  if (search) algos = algos.filter(a => a.name.toLowerCase().includes(search) || a.short.toLowerCase().includes(search));
+
+  if (algos.length === 0) {
+    grid.innerHTML = '<div class="empty-state">Nenhum algoritmo encontrado.</div>';
+    return;
+  }
+
+  grid.innerHTML = algos.map(a => {
+    const catColor = CATEGORIES[a.cat]?.color || '#7c3aed';
+    const isLearned = learned.has(a.id);
+    return `
+    <div class="algo-card ${isLearned ? 'learned' : ''}" 
+         style="--cat-color:${catColor}" 
+         onclick="openAlgo(${a.id})">
+      <div class="card-top">
+        <span class="card-num">#${String(a.id).padStart(2,'0')}</span>
+        <div class="card-status">${isLearned ? '✓' : ''}</div>
+      </div>
+      <div class="card-emoji">${a.emoji}</div>
+      <div class="card-name">${a.name}</div>
+      <div class="card-desc">${a.short}</div>
+      <span class="card-cat-badge" style="color:${catColor}">${CATEGORIES[a.cat]?.label || ''}</span>
+    </div>`;
+  }).join('');
+}
+
+document.getElementById('searchInput').addEventListener('input', () => renderGrid(currentCat));
+
+// MODAL
+function openAlgo(id) {
+  currentIdx = ALGOS.findIndex(a => a.id === id);
+  renderModal();
+  document.getElementById('modalOverlay').classList.add('open');
+  // Reset to explain tab
+  switchTabByName('explain');
+}
+
+function renderModal() {
+  const a = ALGOS[currentIdx];
+  document.getElementById('mNum').textContent = `Algoritmo #${String(a.id).padStart(2,'0')} · ${CATEGORIES[a.cat]?.label}`;
+  document.getElementById('mTitle').textContent = `${a.emoji} ${a.name}`;
+  document.getElementById('mSub').textContent = a.short;
+  document.getElementById('mExplain').textContent = a.explain;
+  document.getElementById('mAnalogyEmoji').textContent = a.analogyEmoji;
+  document.getElementById('mAnalogy').textContent = a.analogy;
+  document.getElementById('mUseCases').innerHTML = a.useCases.map(u => `<span class="use-case-tag">${u}</span>`).join('');
+  document.getElementById('mPros').innerHTML = a.pros.map(p => `<li>${p}</li>`).join('');
+  document.getElementById('mCons').innerHTML = a.cons.map(c => `<li>${c}</li>`).join('');
+  document.getElementById('mCode').innerHTML = a.code;
+  document.getElementById('mCodeExplain').textContent = a.codeExplain;
+
+  // Quiz
+  document.getElementById('qQuestion').textContent = a.quiz.q;
+  document.getElementById('qOptions').innerHTML = a.quiz.opts.map((o,i) =>
+    `<button class="quiz-option" onclick="answerQuiz(${i})">${o}</button>`
+  ).join('');
+  document.getElementById('qFeedback').className = 'quiz-feedback';
+  document.getElementById('qFeedback').textContent = '';
+
+  // Mark button
+  const btn = document.getElementById('markBtn');
+  if (learned.has(a.id)) {
+    btn.textContent = '✓ Aprendido!';
+    btn.className = 'btn btn-ghost';
+  } else {
+    btn.textContent = '✓ Marcar como aprendido';
+    btn.className = 'btn btn-success';
+  }
+}
+
+function answerQuiz(idx) {
+  const a = ALGOS[currentIdx];
+  const opts = document.querySelectorAll('.quiz-option');
+  opts.forEach(b => b.disabled = true);
+  opts[idx].classList.add(idx === a.quiz.correct ? 'correct' : 'wrong');
+  if (idx !== a.quiz.correct) opts[a.quiz.correct].classList.add('correct');
+  const fb = document.getElementById('qFeedback');
+  fb.textContent = (idx === a.quiz.correct ? '🎉 ' : '❌ ') + a.quiz.feedback;
+  fb.className = `quiz-feedback show ${idx === a.quiz.correct ? 'ok' : 'fail'}`;
+  if (idx === a.quiz.correct) {
+    learned.add(a.id);
+    saveProgress();
+    renderGrid(currentCat);
+    document.getElementById('markBtn').textContent = '✓ Aprendido!';
+    document.getElementById('markBtn').className = 'btn btn-ghost';
+  }
+}
+
+function toggleLearned() {
+  const a = ALGOS[currentIdx];
+  if (learned.has(a.id)) {
+    learned.delete(a.id);
+  } else {
+    learned.add(a.id);
+  }
+  saveProgress();
+  renderGrid(currentCat);
+  renderModal();
+}
+
+function navAlgo(dir) {
+  currentIdx = (currentIdx + dir + ALGOS.length) % ALGOS.length;
+  renderModal();
+  switchTabByName('explain');
+}
+
+function closeModal(e) {
+  if (e.target === document.getElementById('modalOverlay')) closeModalDirect();
+}
+function closeModalDirect() {
+  document.getElementById('modalOverlay').classList.remove('open');
+}
+
+function switchTab(name, btn) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('tab-' + name).classList.add('active');
+}
+
+function switchTabByName(name) {
+  document.querySelectorAll('.tab-btn').forEach((b,i) => {
+    b.classList.toggle('active', i === ['explain','code','quiz'].indexOf(name));
+  });
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+}
+
+document.addEventListener('keydown', e => {
+  if (!document.getElementById('modalOverlay').classList.contains('open')) return;
+  if (e.key === 'ArrowRight') navAlgo(1);
+  if (e.key === 'ArrowLeft') navAlgo(-1);
+  if (e.key === 'Escape') closeModalDirect();
+});
+
+// INIT
+renderCats();
+renderGrid('all');
+updateProgress();
+</script>
+</body>
+</html>
